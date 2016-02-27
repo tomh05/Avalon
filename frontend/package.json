@@ -1,0 +1,43 @@
+{
+  "name": "tictactoe-frontend",
+  "version": "1.0.0",
+  "description": "Tic Tac Toe powered by Colyseus",
+  "main": "src/game.js",
+  "scripts": {
+    "webpack": "webpack",
+    "server": "node --harmony server/index.js",
+    "dev": "webpack-dev-server",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "tictactoe",
+    "multiplayer",
+    "game"
+  ],
+  "author": "Endel Dreyer",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-loader": "^6.2.4",
+    "brfs": "^1.4.1",
+    "css-loader": "^0.23.1",
+    "json-loader": "^0.5.4",
+    "pixi.js": "^3.0.9",
+    "style-loader": "^0.13.0",
+    "transform-loader": "^0.2.3",
+    "webpack": "^1.12.9",
+    "webpack-dev-server": "^1.14.1"
+  },
+  "dependencies": {
+    "babel-core": "^6.5.2",
+    "babel-preset-es2015": "^6.5.0",
+    "clock-timer.js": "^1.1.0",
+    "pixi.js": "^3.0.9",
+    "tweener": "^0.1.3",
+    "url-loader": "^0.5.7"
+  },
+  "babel": {
+    "presets": [
+      "es2015"
+    ]
+  }
+}
