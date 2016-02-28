@@ -18,69 +18,84 @@ export default class Application {
 
   constructor () {
     this.background = new PIXI.Sprite.fromImage('images/background.jpg')
+    this.background.pivot.x = this.background.width / 2
+    this.background.pivot.y = this.background.height / 2
 
-    Application.WIDTH = this.background.width
-    Application.SCALE_RATIO = window.innerWidth / Application.WIDTH
-    Application.HEIGHT = window.innerHeight / Application.SCALE_RATIO
-    Application.MARGIN = (Application.HEIGHT / 100) * 10 // 10%
+    this.width = 640;
+    this.height = 640;
 
-    var width = this.background.width * Application.SCALE_RATIO
-      , height = window.innerHeight
+    this.scale = this.getMaxScale();
 
-    this.renderer = new PIXI.WebGLRenderer(width, height, {
+    // canvas size
+    this.screenWidth = window.innerWidth
+    this.screenHeight = window.innerHeight
+
+    this.scaledWidth = this.screenWidth / this.scale
+    this.scaledHeight = this.screenHeight / this.scale
+
+    // this.renderer = new PIXI.WebGLRenderer(width, height, {
+    this.renderer = new PIXI.WebGLRenderer(this.screenWidth, this.screenHeight, {
       // resolution: window.devicePixelRatio,
-      // antialias: false,
+      antialias: false
     })
     this.renderer.backgroundColor = 0xffffff
     document.body.appendChild(this.renderer.view)
 
-    this.sceneManager = new SceneManager(Application.SCALE_RATIO)
+    this.stage = new SceneManager(Application.SCALE_RATIO)
+    this.stage.scale.set(this.scale);
+
     this.container = new PIXI.Container()
-
-    this.backgroundWidth = this.background.width
-    this.background.pivot.y = this.background.height / 2
-    this.background.scale.x = Application.SCALE_RATIO
-    this.background.scale.y = Application.SCALE_RATIO
-    this.background.y = height / 2
+    this.background.x = this.screenWidth / 2
+    this.background.y = this.screenHeight / 2
     this.container.addChild(this.background)
-    this.container.addChild(this.sceneManager)
+    this.container.addChild(this.stage)
 
-    this.renderer.view.width = width
-    this.renderer.view.height = height
+    window.addEventListener('resize', this.onResize.bind(this))
+    this.onResize()
 
-    if (this.renderer.view.width > window.innerWidth) {
-      this.renderer.view.style.position = "absolute"
-      this.sceneManager.x = (window.innerWidth - this.renderer.view.width) / 2
-    }
+    // if (this.renderer.view.width > window.innerWidth) {
+    //   this.renderer.view.style.position = "absolute"
+    //   this.stage.x = (window.innerWidth - this.renderer.view.width) / 2
+    // }
+  }
 
-    // window.addEventListener('blur', this.pauseGame.bind(this))
-    // window.addEventListener('focus', this.unpauseGame.bind(this))
-    // document.addEventListener('visibilitychange', this.onVisibilityChange.bind(this))
+  onResize (e) {
+    this.background.x = window.innerWidth / 2
+    this.background.y = window.innerHeight / 2
 
-    // this.componentSystem = createComponentSystem(PIXI.DisplayObject)
+    this.scale = this.getMaxScale()
+
+    this.screenWidth = window.innerWidth
+    this.screenHeight = window.innerHeight
+
+    this.scaledWidth = this.screenWidth / this.scale
+    this.scaledHeight = this.screenHeight / this.scale
+
+    this.renderer.resize(this.screenWidth, this.screenHeight)
+
+    // this.stage.x = this.screenWidth / 2
+    // this.stage.y = this.screenHeight / 2
+    this.stage.scale.set(this.scale)
+
+    Application.WIDTH = this.scaledWidth
+    Application.HEIGHT = this.scaledHeight
+    Application.MARGIN = (this.scaledHeight / 100) * 10
+
   }
 
   gotoScene (sceneClass) {
-    this.sceneManager.goTo(sceneClass)
+    this.stage.goTo(sceneClass)
   }
 
-  // onVisibilityChange () {
-  //   if (document.hidden) {
-  //     this.pauseGame()
-  //   } else {
-  //     this.unpauseGame()
-  //   }
-  // }
-  //
-  // pauseGame () { clock.stop() }
-  // unpauseGame () { clock.start() }
+  getMaxScale () {
+    return Math.min(window.innerWidth / this.width, 1)
+  }
 
   update () {
     window.requestAnimationFrame( this.update.bind( this) )
     clock.tick()
 
     tweener.update(clock.deltaTime)
-    // this.componentSystem.update()
 
     this.renderer.render(this.container)
   }

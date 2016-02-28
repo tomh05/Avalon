@@ -17,8 +17,8 @@ loader.on('complete', () => {
   document.body.removeChild(loading);
 
   var app = new Application()
-  app.update()
   app.gotoScene (TitleScreen)
+  app.update()
 })
 
 loader.load();

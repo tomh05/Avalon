@@ -17,6 +17,7 @@ export default class SceneManager extends PIXI.Container {
 
     if (!this.sceneInstanceMap[ screenName ]) {
       this.sceneInstanceMap[ screenName ] = new screenClass(options)
+      this.sceneInstanceMap[ screenName ].__callbacks = {}
 
       this.bindEvents( this.sceneInstanceMap[ screenName ] )
     }
@@ -24,14 +25,18 @@ export default class SceneManager extends PIXI.Container {
     if (this.currentScene) {
       this.nextScene = this.sceneInstanceMap[ screenName ]
 
-      this.defaultTransitionOut(this.currentScene)
-      this.defaultTransitionIn(this.nextScene).then(() => {
+      if (!this.currentScene.transitionOut) {
+        this.defaultTransitionOut(this.currentScene)
+      }
+
+      let transitionIn = (!this.nextScene.transitionIn)
+        ? this.defaultTransitionIn(this.nextScene)
+        : this.nextScene.transitionIn()
+
+      transitionIn.then(() => {
         this.currentScene = this.nextScene
         this.nextScene = null
       })
-
-      // this.defaultTransitionIn.bind(this, this.nextScene)
-      //   then(this.defaultTransitionIn.bind(this, this.nextScene))
 
     } else {
       this.currentScene = this.sceneInstanceMap[ screenName ]
@@ -40,6 +45,12 @@ export default class SceneManager extends PIXI.Container {
   }
 
   bindEvents (scene) {
+    if (scene.onResize) {
+      let callback = scene.onResize.bind(scene)
+      window.addEventListener('resize', callback)
+      this.sceneInstanceMap[ scene.constructor.name ].__callbacks['resize'] = callback
+      callback()
+    }
     scene.on('goto', (...args) => this.goTo.apply(this, args))
   }
 
@@ -55,6 +66,11 @@ export default class SceneManager extends PIXI.Container {
       to({ alpha: 0 }, 800, Tweener.ease.easeQuintOut).then( () => {
         // dispose & remove all scene references on transition-out
         scene.emit('dispose')
+
+        let callbacks = this.sceneInstanceMap[ scene.constructor.name ].__callbacks
+        for (let event in callbacks) {
+          window.removeEventListener(event, callbacks[event])
+        }
         scene.off()
 
         this.removeChild(scene)

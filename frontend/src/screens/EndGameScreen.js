@@ -1,4 +1,6 @@
 import PIXI from 'pixi.js'
+
+import Application from '../Application'
 import GameScreen from './GameScreen'
 
 import LocalStorage from '../core/LocalStorage'
@@ -63,10 +65,6 @@ export default class EndGameScreen extends PIXI.Container {
     this.on('touchstart', this.startGame.bind(this))
 
     this.on('dispose', this.onDispose.bind(this))
-
-    this.onResizeCallback = this.onResize.bind(this)
-    window.addEventListener('resize', this.onResizeCallback)
-    this.onResize()
   }
 
   startGame () {
@@ -75,23 +73,22 @@ export default class EndGameScreen extends PIXI.Container {
   }
 
   onResize () {
-    this.MARGIN = (window.innerHeight / 100) * 8 // 5%
+    this.MARGIN = (Application.WIDTH / 100) * 8 // 5%
 
-    this.title.x = window.innerWidth / 2;
+    this.title.x = Application.WIDTH / 2;
     this.title.y = this.MARGIN
 
-    this.instructionText.x = window.innerWidth / 2
-    this.instructionText.y = window.innerHeight / 2
+    this.instructionText.x = Application.WIDTH / 2
+    this.instructionText.y = Application.HEIGHT / 2 - this.instructionText.height / 3.8
 
-    this.statusesText.x = window.innerWidth / 2
-    this.statusesText.y = this.instructionText.y + this.instructionText.height + this.MARGIN
+    this.statusesText.x = Application.WIDTH / 2
+    this.statusesText.y = this.instructionText.y + this.instructionText.height + 10
 
-    this.colyseus.x = window.innerWidth / 2
-    this.colyseus.y = window.innerHeight - this.colyseus.height - this.MARGIN
+    this.colyseus.x = Application.WIDTH / 2
+    this.colyseus.y = Application.HEIGHT - this.colyseus.height - this.MARGIN
   }
 
   onDispose () {
-    window.removeEventListener('resize', this.onResizeCallback)
   }
 
 }

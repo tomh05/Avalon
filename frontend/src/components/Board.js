@@ -36,7 +36,7 @@ export default class Board extends PIXI.Container {
     move.pivot.x = move.width / 2
     move.pivot.y = move.height / 2
     move.x = (x * this.size) + (this.size / 2)
-    move.y = (y * this.size) + (this.size / 2)
+    move.y = (y * this.size) + (this.size / 2) - (move.height * 0.1)
 
     this.addChild(move)
     tweener.add(move).from({ alpha: 0 }, 300, Tweener.ease.quintOut)
