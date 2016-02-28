@@ -1,3 +1,4 @@
+import PIXI from 'pixi.js'
 import SceneManager from './core/SceneManager'
 
 import Clock from 'clock-timer.js'
@@ -7,18 +8,24 @@ import Tweener from 'tweener'
 window.Tweener = Tweener
 window.tweener = new Tweener();
 
-window.SCALE_RATIO = 1
+import Colyseus from 'colyseus.js'
+window.colyseus = new Colyseus(
+  window.location.protocol.replace("http", "ws") + "//localhost:3553"
+  // window.location.protocol.replace("http", "ws") + "//" + process.env.
+)
 
 export default class Application {
 
   constructor () {
-    this.tmpBackground = new PIXI.Sprite.fromImage('images/background.jpg')
+    this.background = new PIXI.Sprite.fromImage('images/background.jpg')
 
-    var ratio = window.innerHeight / this.tmpBackground.height
-      , width = this.tmpBackground.width * ratio
-      , height = this.tmpBackground.height * ratio
+    Application.WIDTH = this.background.width
+    Application.SCALE_RATIO = window.innerWidth / Application.WIDTH
+    Application.HEIGHT = window.innerHeight / Application.SCALE_RATIO
+    Application.MARGIN = (Application.HEIGHT / 100) * 10 // 10%
 
-    SCALE_RATIO = ratio
+    var width = this.background.width * Application.SCALE_RATIO
+      , height = window.innerHeight
 
     this.renderer = new PIXI.WebGLRenderer(width, height, {
       // resolution: window.devicePixelRatio,
@@ -27,7 +34,16 @@ export default class Application {
     this.renderer.backgroundColor = 0xffffff
     document.body.appendChild(this.renderer.view)
 
-    this.sceneManager = new SceneManager(ratio)
+    this.sceneManager = new SceneManager(Application.SCALE_RATIO)
+    this.container = new PIXI.Container()
+
+    this.backgroundWidth = this.background.width
+    this.background.pivot.y = this.background.height / 2
+    this.background.scale.x = Application.SCALE_RATIO
+    this.background.scale.y = Application.SCALE_RATIO
+    this.background.y = height / 2
+    this.container.addChild(this.background)
+    this.container.addChild(this.sceneManager)
 
     this.renderer.view.width = width
     this.renderer.view.height = height
@@ -42,14 +58,6 @@ export default class Application {
     document.addEventListener('visibilitychange', this.onVisibilityChange.bind(this))
 
     // this.componentSystem = createComponentSystem(PIXI.DisplayObject)
-  }
-
-  get width () {
-    return this.tmpBackground.width
-  }
-
-  get height () {
-    return this.tmpBackground.height
   }
 
   gotoScene (sceneClass) {
@@ -74,7 +82,7 @@ export default class Application {
     tweener.update(clock.deltaTime)
     // this.componentSystem.update()
 
-    this.renderer.render(this.sceneManager)
+    this.renderer.render(this.container)
   }
 
 }

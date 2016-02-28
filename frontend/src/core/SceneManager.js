@@ -16,7 +16,7 @@ export default class SceneManager extends PIXI.Container {
     var screenName = screenClass.name
 
     if (!this.sceneInstanceMap[ screenName ]) {
-      this.sceneInstanceMap[ screenName ] = new screenClass
+      this.sceneInstanceMap[ screenName ] = new screenClass(options)
 
       this.bindEvents( this.sceneInstanceMap[ screenName ] )
     }

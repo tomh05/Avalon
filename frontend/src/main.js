@@ -1,8 +1,24 @@
 require('../app.css')
 
-var PIXI = require('pixi.js')
-window.PIXI = PIXI
-
+import PIXI from 'pixi.js'
 import Application from './Application';
-debugger
-var app = new Application()
+import TitleScreen from './screens/TitleScreen'
+
+var loader = new PIXI.loaders.Loader();
+loader.add('logo', 'images/logo.png')
+loader.add('background', 'images/background.jpg')
+loader.add('colyseus', 'images/colyseus.png')
+
+loader.add('clock-icon', 'images/clock-icon.png')
+loader.add('board', 'images/board.png')
+
+loader.on('complete', () => {
+  var loading = document.querySelector('.loading');
+  document.body.removeChild(loading);
+
+  var app = new Application()
+  app.update()
+  app.gotoScene (TitleScreen)
+})
+
+loader.load();
