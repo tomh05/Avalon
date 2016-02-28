@@ -11,7 +11,7 @@ export default class Board extends PIXI.Container {
     this.addChild(this.background)
 
     let slot = new PIXI.Graphics()
-    slot.beginFill(0x000000, 0.8)
+    slot.beginFill(0x000000, 0.0)
     slot.drawRect(0, 0, this.size, this.size)
 
     for (let y=0; y<3; y++) {
