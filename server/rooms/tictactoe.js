@@ -35,6 +35,9 @@ class TicTacToe extends Room {
     if (this.clients.length == 2) {
       this.state.currentTurn = client.id
       this.nextTurnDelayed = this.clock.setTimeout(this.doRandomMove.bind(this), TURN_TIMEOUT * 1000)
+
+      // lock this room for new users
+      this.lock()
     }
   }
 
@@ -64,8 +67,6 @@ class TicTacToe extends Room {
   }
 
   checkBoardComplete () {
-    console.log("isBoardComplete:", this._flatten(this.state.board).
-      filter(item => item === 0).length === 0)
     return this._flatten(this.state.board).
       filter(item => item === 0).length === 0
   }
@@ -125,6 +126,12 @@ class TicTacToe extends Room {
   }
 
   onLeave (client) {
+    delete this.state.players[ client.id ]
+
+    let remainingPlayerIds = Object.keys(this.state.players)
+    if (remainingPlayerIds.length > 0) {
+      this.state.winner = remainingPlayerIds[0]
+    }
   }
 
   _flatten(arr, previous) {

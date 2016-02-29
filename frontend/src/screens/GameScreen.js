@@ -13,7 +13,11 @@ export default class GameScreen extends PIXI.Container {
     this.room = colyseus.join('tictactoe')
     this.room.on('update', this.onUpdate.bind(this))
 
-    this.waitingText = new PIXI.Text("Waiting for an opponent...", {
+    let text = (colyseus.readyState === WebSocket.CLOSED)
+      ? "Couldn't connect."
+      : "Waiting for an opponent..."
+
+    this.waitingText = new PIXI.Text(text, {
       font: "100px JennaSue",
       fill: '#000',
       textAlign: 'center'
@@ -23,6 +27,13 @@ export default class GameScreen extends PIXI.Container {
     this.addChild(this.waitingText)
 
     this.on('dispose', this.onDispose.bind(this))
+  }
+
+  transitionOut () {
+    tweener.add(this.timeIcon).to({y: this.timeIcon.y - 10, alpha: 0}, 900, Tweener.ease.quintOut)
+    tweener.add(this.timeRemaining).to({y: this.timeRemaining.y - 10, alpha: 0}, 900, Tweener.ease.quintOut)
+    tweener.add(this.board).to({ alpha: 0 }, 500, Tweener.ease.quintOut)
+    return tweener.add(this.statusText).to({ y: this.statusText.y + 10, alpha: 0 }, 1000, Tweener.ease.quintOut)
   }
 
   onJoin () {
@@ -100,13 +111,27 @@ export default class GameScreen extends PIXI.Container {
 
   nextTurn (playerId) {
     console.log("nextTurn: ", playerId)
-    if (playerId == colyseus.id) {
-      this.statusText.text = "Your move!"
 
-    } else {
-      this.statusText.text = "Oppoent's turn..."
-    }
-    this.statusText.x = Application.WIDTH / 2 - this.statusText.width / 2
+    tweener.add(this.statusText).to({
+      y: Application.HEIGHT - Application.MARGIN + 10,
+      alpha: 0
+    }, 200, Tweener.ease.quintOut).then(() => {
+
+      if (playerId == colyseus.id) {
+        this.statusText.text = "Your move!"
+
+      } else {
+        this.statusText.text = "Oppoent's turn..."
+      }
+
+      this.statusText.x = Application.WIDTH / 2 - this.statusText.width / 2
+
+      tweener.add(this.statusText).to({
+        y: Application.HEIGHT - Application.MARGIN,
+        alpha: 1
+      }, 200, Tweener.ease.quintOut)
+
+    })
 
     this.timeRemaining.style.fill = '#000000';
     this.timeRemaining.text = "10"

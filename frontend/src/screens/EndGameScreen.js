@@ -22,7 +22,7 @@ export default class EndGameScreen extends PIXI.Container {
       incrementAttribute = 'win'
 
     } else {
-      titleText = "You lose! :("
+      titleText = "You lose"
       incrementAttribute = 'loss'
     }
 
@@ -67,6 +67,20 @@ export default class EndGameScreen extends PIXI.Container {
     this.on('dispose', this.onDispose.bind(this))
   }
 
+  transitionIn () {
+    tweener.add(this.title).from({y: this.title.y - 10, alpha: 0}, 1000, Tweener.ease.quintOut)
+    tweener.add(this.colyseus).from({ y: this.colyseus.y + 10, alpha: 0 }, 1000, Tweener.ease.quintOut)
+    tweener.add(this.statusesText).from({ alpha: 0 }, 1100, Tweener.ease.quintOut)
+    return tweener.add(this.instructionText).from({ alpha: 0 }, 1500, Tweener.ease.quintOut)
+  }
+
+  transitionOut () {
+    tweener.add(this.title).to({y: this.title.y - 10, alpha: 0}, 1000, Tweener.ease.quintOut)
+    tweener.add(this.colyseus).to({ y: this.colyseus.y + 10, alpha: 0 }, 1000, Tweener.ease.quintOut)
+    tweener.add(this.statusesText).to({ alpha: 0 }, 1100, Tweener.ease.quintOut)
+    return tweener.add(this.instructionText).to({ alpha: 0 }, 1500, Tweener.ease.quintOut)
+  }
+
   startGame () {
     console.log("WAT")
     this.emit('goto', GameScreen)
@@ -92,8 +106,3 @@ export default class EndGameScreen extends PIXI.Container {
   }
 
 }
-
-
-
-
-

@@ -32,6 +32,16 @@ export default class TitleScreen extends PIXI.Container {
     this.on('dispose', this.onDispose.bind(this))
   }
 
+  transitionIn () {
+    return tweener.add(this.colyseus).from({ alpha: 0, y: this.colyseus.y + 50 }, 1000, Tweener.ease.quintOut)
+  }
+
+  transitionOut () {
+    tweener.add(this.title).to({y: this.title.y - 10, alpha: 0}, 1000, Tweener.ease.quintOut)
+    tweener.add(this.colyseus).to({ y: this.colyseus.y + 10, alpha: 0 }, 1000, Tweener.ease.quintOut)
+    return tweener.add(this.instructionText).to({ alpha: 0 }, 1500, Tweener.ease.quintOut)
+  }
+
   startGame () {
     this.emit('goto', GameScreen)
   }
