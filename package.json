@@ -3,8 +3,21 @@
   "version": "1.0.0",
   "description": "HTML5 Tic-Tac-Toe Game powered by Colyseus",
   "scripts": {
-    "install": "npm install --prefix ./server && npm install --prefix ./frontend",
-    "start": "npm run webpack --prefix ./frontend && npm start --prefix ./server"
+    "install": "npm install --prefix ./server && npm install --prefix ./frontend && npm run webpack --prefix ./frontend",
+    "start": "npm start --prefix ./server"
   },
-  "author": "Endel Dreyer"
+  "author": "Endel Dreyer",
+  "dependencies": {
+    "babel-loader": "^6.2.4",
+    "babel-core": "^6.5.2",
+    "babel-preset-es2015": "^6.5.0",
+    "url-loader": "^0.5.7",
+    "brfs": "^1.4.1",
+    "css-loader": "^0.23.1",
+    "json-loader": "^0.5.4",
+    "pixi.js": "^3.0.9",
+    "style-loader": "^0.13.0",
+    "transform-loader": "^0.2.3",
+    "webpack": "^1.12.9"
+  }
 }
