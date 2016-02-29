@@ -50,6 +50,8 @@ export default class Application {
     this.container.addChild(this.background)
     this.container.addChild(this.stage)
 
+    tweener.add(this.background).from({ alpha: 0 }, 4000, Tweener.ease.quadOut)
+
     window.addEventListener('resize', this.onResize.bind(this))
     this.onResize()
 

@@ -1,0 +1,10 @@
+{
+  "name": "tictactoe-colyseus",
+  "version": "1.0.0",
+  "description": "HTML5 Tic-Tac-Toe Game powered by Colyseus",
+  "scripts": {
+    "install": "npm install --prefix ./server && npm install --prefix ./frontend",
+    "start": "npm run webpack --prefix ./frontend && npm start --prefix ./server"
+  },
+  "author": "Endel Dreyer"
+}

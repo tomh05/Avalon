@@ -22,11 +22,18 @@ export default class GameScreen extends PIXI.Container {
       fill: '#000',
       textAlign: 'center'
     })
-    this.waitingText.x = Application.WIDTH / 2 - this.waitingText.width / 2
-    this.waitingText.y = Application.HEIGHT / 2 - this.waitingText.height / 2
+    this.waitingText.pivot.x = this.waitingText.width / 2
+    this.waitingText.pivot.y = this.waitingText.height / 2
     this.addChild(this.waitingText)
 
     this.on('dispose', this.onDispose.bind(this))
+
+    this.onResize()
+  }
+
+  transitionIn () {
+    tweener.add(this.waitingText).from({ alpha: 0 }, 900, Tweener.ease.quintOut)
+    return tweener.add(this.waitingText.scale).from({x: 1.5, y: 1.5}, 1000, Tweener.ease.quintOut)
   }
 
   transitionOut () {
@@ -42,9 +49,8 @@ export default class GameScreen extends PIXI.Container {
 
     this.timeIcon = new PIXI.Sprite.fromImage('images/clock-icon.png')
     this.timeIcon.pivot.x = this.timeIcon.width / 2
-    this.timeIcon.x = Application.WIDTH / 2 - this.timeIcon.pivot.x
-    this.timeIcon.y = Application.MARGIN
     this.addChild(this.timeIcon)
+
 
     this.timeRemaining = new PIXI.Text("10", {
       font: "100px JennaSue",
@@ -52,15 +58,11 @@ export default class GameScreen extends PIXI.Container {
       textAlign: 'center'
     })
     this.timeRemaining.pivot.x = this.timeRemaining.width / 2
-    this.timeRemaining.x = Application.WIDTH / 2 + this.timeIcon.pivot.x + 20
-    this.timeRemaining.y = Application.MARGIN - 20
     this.addChild(this.timeRemaining)
 
     this.board = new Board()
     this.board.pivot.x = this.board.width / 2
     this.board.pivot.y = this.board.height / 2
-    this.board.x = Application.WIDTH / 2
-    this.board.y = Application.HEIGHT / 2
     this.board.on('select', this.onSelect.bind(this))
     this.addChild(this.board)
 
@@ -70,11 +72,11 @@ export default class GameScreen extends PIXI.Container {
       textAlign: 'center'
     })
     this.statusText.pivot.y = this.statusText.height / 2
-    this.statusText.x = Application.WIDTH / 2 - this.statusText.width / 2
-    this.statusText.y = Application.HEIGHT - Application.MARGIN
     this.addChild(this.statusText)
 
     this.countdownInterval = clock.setInterval(this.turnCountdown.bind(this), 1000)
+
+    this.onResize()
   }
 
   onSelect (x, y) {
@@ -154,14 +156,31 @@ export default class GameScreen extends PIXI.Container {
   }
 
   drawGame () {
-    console.log("Draw game!")
     this.emit('goto', EndGameScreen, { draw: true })
   }
 
   showWinner (clientId) {
-    console.log("Winner!", clientId)
     this.emit('goto', EndGameScreen, { won: colyseus.id == clientId })
-}
+  }
+
+  onResize () {
+    this.waitingText.x = Application.WIDTH / 2
+    this.waitingText.y = Application.HEIGHT / 2
+
+    if (this.timeIcon) {
+      this.timeIcon.x = Application.WIDTH / 2 - this.timeIcon.pivot.x
+      this.timeIcon.y = Application.MARGIN
+
+      this.timeRemaining.x = Application.WIDTH / 2 + this.timeIcon.pivot.x + 20
+      this.timeRemaining.y = Application.MARGIN - 20
+
+      this.board.x = Application.WIDTH / 2
+      this.board.y = Application.HEIGHT / 2
+
+      this.statusText.x = Application.WIDTH / 2 - this.statusText.width / 2
+      this.statusText.y = Application.HEIGHT - Application.MARGIN
+    }
+  }
 
   onDispose () {
   }

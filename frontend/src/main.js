@@ -1,5 +1,3 @@
-require('../app.css')
-
 import PIXI from 'pixi.js'
 import Application from './Application';
 import TitleScreen from './screens/TitleScreen'

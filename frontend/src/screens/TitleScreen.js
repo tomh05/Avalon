@@ -33,10 +33,16 @@ export default class TitleScreen extends PIXI.Container {
   }
 
   transitionIn () {
-    return tweener.add(this.colyseus).from({ alpha: 0, y: this.colyseus.y + 50 }, 1000, Tweener.ease.quintOut)
+    tweener.add(this.title).from({y: this.title.y - 10, alpha: 0}, 1000, Tweener.ease.quadOut)
+    tweener.add(this.colyseus).from({ y: this.colyseus.y + 10, alpha: 0 }, 1000, Tweener.ease.quadOut)
+    return tweener.add(this.instructionText).from({ alpha: 0 }, 1000, Tweener.ease.quadOut)
   }
 
   transitionOut () {
+    tweener.remove(this.title)
+    tweener.remove(this.colyseus)
+    tweener.remove(this.instructionText)
+
     tweener.add(this.title).to({y: this.title.y - 10, alpha: 0}, 1000, Tweener.ease.quintOut)
     tweener.add(this.colyseus).to({ y: this.colyseus.y + 10, alpha: 0 }, 1000, Tweener.ease.quintOut)
     return tweener.add(this.instructionText).to({ alpha: 0 }, 1500, Tweener.ease.quintOut)

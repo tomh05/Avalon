@@ -13,4 +13,6 @@ var colyseus = require('colyseus')
 gameServer.register('tictactoe', require('./rooms/tictactoe'))
 server.listen(port);
 
+app.use(express.static(__dirname + "/../frontend/public"))
+
 console.log(`Listening on ws://localhost:${ port }`)

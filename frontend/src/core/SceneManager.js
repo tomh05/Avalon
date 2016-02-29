@@ -45,6 +45,11 @@ export default class SceneManager extends PIXI.Container {
 
     } else {
       this.currentScene = this.sceneInstanceMap[ screenName ]
+      let transitionIn = (!this.currentScene.transitionIn)
+        ? this.defaultTransitionIn(this.currentScene)
+        : this.currentScene.transitionIn()
+
+      // add next scene to display list
       this.addChild(this.currentScene)
     }
   }
