@@ -79,15 +79,18 @@ export default class SceneManager extends PIXI.Container {
     // dispose & remove all scene references on transition-out
     scene.emit('dispose')
 
-    // callbacks
-    let callbacks = this.sceneInstanceMap[ scene.constructor.name ].__callbacks
-    for (let event in callbacks) {
-      window.removeEventListener(event, callbacks[event])
+    let instance = this.sceneInstanceMap[ scene.constructor.name ]
+    if (instance) {
+      // callbacks
+      let callbacks = instance.__callbacks
+      for (let event in callbacks) {
+        window.removeEventListener(event, callbacks[event])
+      }
+      delete this.sceneInstanceMap[ scene.constructor.name ]
     }
-    scene.off()
 
+    scene.off()
     this.removeChild(scene)
-    delete this.sceneInstanceMap[ scene.constructor.name ]
   }
 
 }
