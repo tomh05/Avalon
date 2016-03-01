@@ -1,6 +1,7 @@
 import PIXI from 'pixi.js'
 
 import Application from '../Application'
+import TitleScreen from './TitleScreen'
 import EndGameScreen from './EndGameScreen'
 
 import Board from '../components/Board'
@@ -12,6 +13,10 @@ export default class GameScreen extends PIXI.Container {
 
     this.room = colyseus.join('tictactoe')
     this.room.on('update', this.onUpdate.bind(this))
+    colyseus.onerror = (e) => {
+      this.emit('goto', TitleScreen)
+      colyseus.onerror = null
+    }
 
     let text = (colyseus.readyState === WebSocket.CLOSED)
       ? "Couldn't connect."
@@ -37,10 +42,15 @@ export default class GameScreen extends PIXI.Container {
   }
 
   transitionOut () {
-    tweener.add(this.timeIcon).to({y: this.timeIcon.y - 10, alpha: 0}, 300, Tweener.ease.quintOut)
-    tweener.add(this.timeRemaining).to({y: this.timeRemaining.y - 10, alpha: 0}, 300, Tweener.ease.quintOut)
-    tweener.add(this.board).to({ alpha: 0 }, 300, Tweener.ease.quintOut)
-    return tweener.add(this.statusText).to({ y: this.statusText.y + 10, alpha: 0 }, 300, Tweener.ease.quintOut)
+    if (this.timeIcon) {
+      tweener.add(this.timeIcon).to({y: this.timeIcon.y - 10, alpha: 0}, 300, Tweener.ease.quintOut)
+      tweener.add(this.timeRemaining).to({y: this.timeRemaining.y - 10, alpha: 0}, 300, Tweener.ease.quintOut)
+      tweener.add(this.board).to({ alpha: 0 }, 300, Tweener.ease.quintOut)
+      return tweener.add(this.statusText).to({ y: this.statusText.y + 10, alpha: 0 }, 300, Tweener.ease.quintOut)
+
+    } else {
+      return tweener.add(this.waitingText).to({ alpha: 0 }, 300, Tweener.ease.quintOut)
+    }
   }
 
   onJoin () {
@@ -112,8 +122,6 @@ export default class GameScreen extends PIXI.Container {
   }
 
   nextTurn (playerId) {
-    console.log("nextTurn: ", playerId)
-
     tweener.add(this.statusText).to({
       y: Application.HEIGHT - Application.MARGIN + 10,
       alpha: 0
