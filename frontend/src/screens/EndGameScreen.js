@@ -75,6 +75,11 @@ export default class EndGameScreen extends PIXI.Container {
   }
 
   transitionOut () {
+    tweener.remove(this.title)
+    tweener.remove(this.colyseus)
+    tweener.remove(this.statusesText)
+    tweener.remove(this.instructionText)
+
     tweener.add(this.title).to({y: this.title.y - 10, alpha: 0}, 1000, Tweener.ease.quintOut)
     tweener.add(this.colyseus).to({ y: this.colyseus.y + 10, alpha: 0 }, 1000, Tweener.ease.quintOut)
     tweener.add(this.statusesText).to({ alpha: 0 }, 1100, Tweener.ease.quintOut)
@@ -82,7 +87,6 @@ export default class EndGameScreen extends PIXI.Container {
   }
 
   startGame () {
-    console.log("WAT")
     this.emit('goto', GameScreen)
   }
 
