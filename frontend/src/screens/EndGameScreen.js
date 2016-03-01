@@ -68,10 +68,10 @@ export default class EndGameScreen extends PIXI.Container {
   }
 
   transitionIn () {
-    tweener.add(this.title).from({y: this.title.y - 10, alpha: 0}, 1000, Tweener.ease.quintOut)
-    tweener.add(this.colyseus).from({ y: this.colyseus.y + 10, alpha: 0 }, 1000, Tweener.ease.quintOut)
-    tweener.add(this.statusesText).from({ alpha: 0 }, 1100, Tweener.ease.quintOut)
-    return tweener.add(this.instructionText).from({ alpha: 0 }, 1500, Tweener.ease.quintOut)
+    tweener.add(this.title).from({y: this.title.y - 10, alpha: 0}, 300, Tweener.ease.quintOut)
+    tweener.add(this.colyseus).from({ y: this.colyseus.y + 10, alpha: 0 }, 300, Tweener.ease.quintOut)
+    tweener.add(this.statusesText).from({ alpha: 0 }, 300, Tweener.ease.quintOut)
+    return tweener.add(this.instructionText).from({ alpha: 0 }, 300, Tweener.ease.quintOut)
   }
 
   transitionOut () {
@@ -80,10 +80,10 @@ export default class EndGameScreen extends PIXI.Container {
     tweener.remove(this.statusesText)
     tweener.remove(this.instructionText)
 
-    tweener.add(this.title).to({y: this.title.y - 10, alpha: 0}, 1000, Tweener.ease.quintOut)
-    tweener.add(this.colyseus).to({ y: this.colyseus.y + 10, alpha: 0 }, 1000, Tweener.ease.quintOut)
-    tweener.add(this.statusesText).to({ alpha: 0 }, 1100, Tweener.ease.quintOut)
-    return tweener.add(this.instructionText).to({ alpha: 0 }, 1500, Tweener.ease.quintOut)
+    tweener.add(this.title).to({y: this.title.y - 10, alpha: 0}, 300, Tweener.ease.quintOut)
+    tweener.add(this.colyseus).to({ y: this.colyseus.y + 10, alpha: 0 }, 300, Tweener.ease.quintOut)
+    tweener.add(this.statusesText).to({ alpha: 0 }, 300, Tweener.ease.quintOut)
+    return tweener.add(this.instructionText).to({ alpha: 0 }, 300, Tweener.ease.quintOut)
   }
 
   startGame () {

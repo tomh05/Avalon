@@ -32,15 +32,15 @@ export default class GameScreen extends PIXI.Container {
   }
 
   transitionIn () {
-    tweener.add(this.waitingText).from({ alpha: 0 }, 900, Tweener.ease.quintOut)
-    return tweener.add(this.waitingText.scale).from({x: 1.5, y: 1.5}, 1000, Tweener.ease.quintOut)
+    tweener.add(this.waitingText).from({ alpha: 0 }, 300, Tweener.ease.quintOut)
+    return tweener.add(this.waitingText.scale).from({x: 1.5, y: 1.5}, 300, Tweener.ease.quintOut)
   }
 
   transitionOut () {
-    tweener.add(this.timeIcon).to({y: this.timeIcon.y - 10, alpha: 0}, 900, Tweener.ease.quintOut)
-    tweener.add(this.timeRemaining).to({y: this.timeRemaining.y - 10, alpha: 0}, 900, Tweener.ease.quintOut)
-    tweener.add(this.board).to({ alpha: 0 }, 500, Tweener.ease.quintOut)
-    return tweener.add(this.statusText).to({ y: this.statusText.y + 10, alpha: 0 }, 1000, Tweener.ease.quintOut)
+    tweener.add(this.timeIcon).to({y: this.timeIcon.y - 10, alpha: 0}, 300, Tweener.ease.quintOut)
+    tweener.add(this.timeRemaining).to({y: this.timeRemaining.y - 10, alpha: 0}, 300, Tweener.ease.quintOut)
+    tweener.add(this.board).to({ alpha: 0 }, 300, Tweener.ease.quintOut)
+    return tweener.add(this.statusText).to({ y: this.statusText.y + 10, alpha: 0 }, 300, Tweener.ease.quintOut)
   }
 
   onJoin () {
@@ -156,10 +156,12 @@ export default class GameScreen extends PIXI.Container {
   }
 
   drawGame () {
+    this.room.leave()
     this.emit('goto', EndGameScreen, { draw: true })
   }
 
   showWinner (clientId) {
+    this.room.leave()
     this.emit('goto', EndGameScreen, { won: colyseus.id == clientId })
   }
 

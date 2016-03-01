@@ -29,16 +29,15 @@ export default class SceneManager extends PIXI.Container {
         ? this.defaultTransitionOut(this.currentScene)
         : this.currentScene.transitionOut()
 
-      transitionOut.then(this.transitionOutCallback.bind(this, this.currentScene))
+      transitionOut.then(() => {
+        this.transitionOutCallback(this.currentScene)
 
-      let transitionIn = (!this.nextScene.transitionIn)
-        ? this.defaultTransitionIn(this.nextScene)
-        : this.nextScene.transitionIn()
+        let transitionIn = (!this.nextScene.transitionIn)
+          ? this.defaultTransitionIn(this.nextScene)
+          : this.nextScene.transitionIn()
 
-      // add next scene to display list
-      this.addChild(this.nextScene)
-
-      transitionIn.then(() => {
+        // add next scene to display list
+        this.addChild(this.nextScene)
         this.currentScene = this.nextScene
         this.nextScene = null
       })
@@ -67,12 +66,12 @@ export default class SceneManager extends PIXI.Container {
 
   defaultTransitionIn (scene) {
     return tweener.add(scene).
-      from({ alpha: 0 }, 800, Tweener.ease.easeQuintOut)
+      from({ alpha: 0 }, 800, Tweener.ease.quintOut)
   }
 
   defaultTransitionOut (scene) {
     return tweener.add(scene).
-      to({ alpha: 0 }, 800, Tweener.ease.easeQuintOut)
+      to({ alpha: 0 }, 800, Tweener.ease.quintOut)
   }
 
   transitionOutCallback (scene) {
