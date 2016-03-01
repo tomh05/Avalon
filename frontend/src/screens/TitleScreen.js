@@ -26,8 +26,8 @@ export default class TitleScreen extends PIXI.Container {
     this.addChild(this.colyseus)
 
     this.interactive = true
-    this.on('click', this.startGame.bind(this))
-    this.on('touchstart', this.startGame.bind(this))
+    this.once('click', this.startGame.bind(this))
+    this.once('touchstart', this.startGame.bind(this))
 
     this.on('dispose', this.onDispose.bind(this))
   }
