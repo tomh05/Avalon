@@ -168,17 +168,19 @@ export default class GameScreen extends PIXI.Container {
     this.waitingText.y = Application.HEIGHT / 2
 
     if (this.timeIcon) {
+      var margin = Application.HEIGHT / 100 * 6
+
       this.timeIcon.x = Application.WIDTH / 2 - this.timeIcon.pivot.x
-      this.timeIcon.y = Application.MARGIN
+      this.timeIcon.y = margin
 
       this.timeRemaining.x = Application.WIDTH / 2 + this.timeIcon.pivot.x + 20
-      this.timeRemaining.y = Application.MARGIN - 20
+      this.timeRemaining.y = margin - 20
 
       this.board.x = Application.WIDTH / 2
       this.board.y = Application.HEIGHT / 2
 
       this.statusText.x = Application.WIDTH / 2 - this.statusText.width / 2
-      this.statusText.y = Application.HEIGHT - Application.MARGIN
+      this.statusText.y = Application.HEIGHT - margin
     }
   }
 

@@ -34,7 +34,7 @@ class TicTacToe extends Room {
 
     if (this.clients.length == 2) {
       this.state.currentTurn = client.id
-      this.nextTurnDelayed = this.clock.setTimeout(this.doRandomMove.bind(this), TURN_TIMEOUT * 1000)
+      this.randomMoveTimeout = this.clock.setTimeout(this.doRandomMove.bind(this, client), TURN_TIMEOUT * 1000)
 
       // lock this room for new users
       this.lock()
@@ -56,10 +56,13 @@ class TicTacToe extends Room {
           this.state.draw = true
 
         } else {
+          // switch turn
           let playerIds = Object.keys(this.state.players)
-            , nextPlayerIndex = (playerIds.indexOf(client.id) === 0) ? 1 : 0
+            , otherPlayerIndex = (client.playerIndex === 0) ? 1 : 0
+          this.state.currentTurn = playerIds[otherPlayerIndex]
 
-          this.state.currentTurn = playerIds[nextPlayerIndex]
+          if (this.randomMoveTimeout) this.randomMoveTimeout.clear()
+          this.randomMoveTimeout = this.clock.setTimeout(this.doRandomMove.bind(this, this.clients[ otherPlayerIndex ]), TURN_TIMEOUT * 1000)
         }
 
       }
@@ -71,13 +74,12 @@ class TicTacToe extends Room {
       filter(item => item === 0).length === 0
   }
 
-  doRandomMove () {
-    // horizontal
+  doRandomMove (client) {
     for (let x=0; x<this.state.board.length; x++) {
-      for (let y=0; y<this.state.board[x]; y++) {
+      for (let y=0; y<this.state.board[x].length; y++) {
         if (this.state.board[x][y]===0) {
-          let playerIndex = this.state.players[ this.state.currentTurn ]
-          this.state.board[x][y] = (playerIndex === 0) ? 'x' : 'o'
+          this.onMessage (client, { x: x, y: y })
+          return
         }
       }
     }
@@ -127,6 +129,8 @@ class TicTacToe extends Room {
 
   onLeave (client) {
     delete this.state.players[ client.id ]
+
+    if (this.randomMoveTimeout) this.randomMoveTimeout.clear()
 
     let remainingPlayerIds = Object.keys(this.state.players)
     if (remainingPlayerIds.length > 0) {
