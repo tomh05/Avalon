@@ -1,9 +1,7 @@
 var Room = require('colyseus').Room
   , ClockTimer = require('clock-timer.js')
 
-const TICK_RATE = 30
-    , PATCH_RATE = 20
-
+const PATCH_RATE = 20
     , TURN_TIMEOUT = 10
 
 class TicTacToe extends Room {
