@@ -10,4 +10,4 @@ Simple Tic-Tac-Toe game powered by Colyseus Game Server.
   - [room implementation](server/rooms/tictactoe.js)
 - Client-side
   - [room connection](frontend/src/screens/GameScreen.js#L13-L14)
-  - [patch handling](frontend/src/screens/GameScreen.js#L86-L112)
+  - [patch handling](frontend/src/screens/GameScreen.js#L96-L122)
