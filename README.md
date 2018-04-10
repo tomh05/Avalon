@@ -2,8 +2,8 @@
 
 Turn-based demonstration project using Colyseus Game Server (v0.9.x)
 
-Consider backing Colyseus' development and support on Patreon. It takes time
-to keep demos and examples like this up-to-date.
+Consider backing Colyseus development and its support on Patreon. I'll start
+making guided video tutorials once I reach a considerable amount of donations.
 
 <a href="https://www.patreon.com/bePatron?u=3301115"><img src="https://c5.patreon.com/external/logo/become_a_patron_button.png" /></a>
 
@@ -34,7 +34,7 @@ npm install
 npm start
 ```
 
-**Important files to look at**:
+## Important files to have look at
 
 - Server-side
   - [registering room](server/index.js#L11)
