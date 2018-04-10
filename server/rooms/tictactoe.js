@@ -1,14 +1,11 @@
-var Room = require('colyseus').Room
-  , ClockTimer = require('clock-timer.js')
+const Room = require('colyseus').Room;
 
-const PATCH_RATE = 20
-    , TURN_TIMEOUT = 10
+const TURN_TIMEOUT = 10
 
-class TicTacToe extends Room {
+module.exports = class TicTacToe extends Room {
 
-  constructor (options) {
-    // call 'update' method each 50ms
-    super(options, 1000 / PATCH_RATE)
+  onInit () {
+    this.maxClients = 2;
 
     this.setState({
       currentTurn: null,
@@ -17,50 +14,48 @@ class TicTacToe extends Room {
       winner: null,
       draw: null
     })
-
-    this.clock = new ClockTimer(true)
-  }
-
-  requestJoin(options) {
-    // only 2 players are allowed to play
-    return this.clients.length < 2;
   }
 
   onJoin (client) {
-    client.playerIndex = Object.keys(this.state.players).length
-    this.state.players[ client.id ] = client.playerIndex
+    client.playerIndex = Object.keys(this.state.players).length;
+    this.state.players[ client.sessionId ] = client.playerIndex;
 
     if (this.clients.length == 2) {
-      this.state.currentTurn = client.id
-      this.randomMoveTimeout = this.clock.setTimeout(this.doRandomMove.bind(this, client), TURN_TIMEOUT * 1000)
+      this.state.currentTurn = client.sessionId;
+      this.randomMoveTimeout = this.clock.setTimeout(this.doRandomMove.bind(this, client), TURN_TIMEOUT * 1000);
 
       // lock this room for new users
-      this.lock()
+      this.lock();
     }
   }
 
   onMessage (client, data) {
-    if (this.state.winner || this.state.draw) { return false; }
+    if (this.state.winner || this.state.draw) {
+      return false;
+    }
 
-    if (client.id === this.state.currentTurn) {
+    if (client.sessionId === this.state.currentTurn) {
       if (this.state.board[ data.x ][ data.y ] === 0) {
-        let move = (client.playerIndex === 0) ? 'x' : 'o'
-        this.state.board[ data.x ][ data.y ] = move
+        let move = (client.playerIndex === 0) ? 'x' : 'o';
+        this.state.board[ data.x ][ data.y ] = move;
 
         if (this.checkWin(data.x, data.y, move)) {
-          this.state.winner = client.id
+          this.state.winner = client.sessionId;
 
         } else if (this.checkBoardComplete()) {
-          this.state.draw = true
+          this.state.draw = true;
 
         } else {
           // switch turn
-          let playerIds = Object.keys(this.state.players)
-            , otherPlayerIndex = (client.playerIndex === 0) ? 1 : 0
+          const playerIds = Object.keys(this.state.players)
+          const otherPlayerIndex = (client.playerIndex === 0) ? 1 : 0;
+
           this.state.currentTurn = playerIds[otherPlayerIndex]
 
-          if (this.randomMoveTimeout) this.randomMoveTimeout.clear()
-          this.randomMoveTimeout = this.clock.setTimeout(this.doRandomMove.bind(this, this.clients[ otherPlayerIndex ]), TURN_TIMEOUT * 1000)
+          if (this.randomMoveTimeout) {
+            this.randomMoveTimeout.clear();
+          }
+          this.randomMoveTimeout = this.clock.setTimeout(this.doRandomMove.bind(this, this.clients[ otherPlayerIndex ]), TURN_TIMEOUT * 1000);
         }
 
       }
@@ -69,30 +64,30 @@ class TicTacToe extends Room {
 
   checkBoardComplete () {
     return this._flatten(this.state.board).
-      filter(item => item === 0).length === 0
+      filter(item => item === 0).length === 0;
   }
 
   doRandomMove (client) {
     for (let x=0; x<this.state.board.length; x++) {
       for (let y=0; y<this.state.board[x].length; y++) {
         if (this.state.board[x][y]===0) {
-          this.onMessage (client, { x: x, y: y })
-          return
+          this.onMessage (client, { x: x, y: y });
+          return;
         }
       }
     }
   }
 
   checkWin (x, y, move) {
-    let won = false
-      , board = this.state.board
-      , boardSize = this.state.board.length
+    let won = false;
+    let board = this.state.board;
+    let boardSize = this.state.board.length;
 
     // horizontal
     for(let i = 0; i < boardSize; i++){
       if (board[x][i] !== move) { break; }
       if (i == boardSize-1) {
-        won = true
+        won = true;
       }
     }
 
@@ -100,7 +95,7 @@ class TicTacToe extends Room {
     for(let i = 0; i < boardSize; i++){
       if (board[i][y] !== move) { break; }
       if (i == boardSize-1) {
-        won = true
+        won = true;
       }
     }
 
@@ -109,7 +104,7 @@ class TicTacToe extends Room {
       for(let i = 0; i < boardSize; i++){
         if(board[i][i] !== move) { break; }
         if(i == boardSize-1) {
-          won = true
+          won = true;
         }
       }
     }
@@ -118,7 +113,7 @@ class TicTacToe extends Room {
     for(let i = 0; i<boardSize; i++){
       if(board[i][(boardSize-1)-i] !== move) { break; }
       if(i == boardSize-1){
-        won = true
+        won = true;
       }
     }
 
@@ -126,7 +121,7 @@ class TicTacToe extends Room {
   }
 
   onLeave (client) {
-    delete this.state.players[ client.id ]
+    delete this.state.players[ client.sessionId ];
 
     if (this.randomMoveTimeout) this.randomMoveTimeout.clear()
 
@@ -153,4 +148,3 @@ class TicTacToe extends Room {
 
 }
 
-module.exports = TicTacToe

@@ -4,15 +4,15 @@
   "description": "Colyseus Server - Minimal example",
   "main": "index.js",
   "scripts": {
-    "start-production": "pm2 start index.js --node-args='--harmony --use-strict'",
-    "dev": "nodemon --harmony ./index.js",
-    "start": "node --harmony ./index.js"
+    "start-production": "pm2 start index.js",
+    "dev": "nodemon ./index.js",
+    "start": "node ./index.js"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
     "clock-timer.js": "^1.0.0",
-    "colyseus": "^0.3.0",
+    "colyseus": "^0.9.3",
     "dotenv": "^2.0.0",
     "express": "^4.13.4"
   },

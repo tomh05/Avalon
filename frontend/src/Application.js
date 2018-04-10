@@ -8,9 +8,10 @@ import Tweener from 'tweener'
 window.Tweener = Tweener
 window.tweener = new Tweener();
 
-import Colyseus from 'colyseus.js'
-window.colyseus = new Colyseus(
-  "wss://tictactoe-colyseus.herokuapp.com"
+import { Client } from 'colyseus.js'
+window.colyseus = new Client(
+  // "wss://tictactoe-colyseus.herokuapp.com"
+  "ws://localhost:3553"
   // window.location.protocol.replace("http", "ws") + "//" + window.location.hostname + ((window.location.port) ? ':' + window.location.port : '')
   // window.location.protocol.replace("http", "ws") + "//" + process.env.
 )

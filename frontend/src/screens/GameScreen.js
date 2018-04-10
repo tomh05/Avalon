@@ -11,13 +11,6 @@ export default class GameScreen extends PIXI.Container {
   constructor () {
     super()
 
-    this.room = colyseus.join('tictactoe')
-    this.room.on('update', this.onUpdate.bind(this))
-    colyseus.onerror = (e) => {
-      this.emit('goto', TitleScreen)
-      colyseus.onerror = null
-    }
-
     let text = (colyseus.readyState === WebSocket.CLOSED)
       ? "Couldn't connect."
       : "Waiting for an opponent..."
@@ -33,7 +26,53 @@ export default class GameScreen extends PIXI.Container {
 
     this.on('dispose', this.onDispose.bind(this))
 
+    this.connect();
+
     this.onResize()
+  }
+
+  connect () {
+    this.room = colyseus.join('tictactoe')
+
+    let numPlayers = 0;
+    this.room.listen("players/:id", (change) => {
+      console.log("NEW PLAYER!");
+      numPlayers++;
+
+      if (numPlayers === 2) {
+        this.onJoin();
+      }
+    });
+
+    this.room.listen("currentTurn", (change) => {
+      if (change.operation === "replace") {
+        setTimeout(() => {
+          this.nextTurn(change.value);
+        }, 10)
+      }
+    });
+
+    this.room.listen("board/:x/:y", (change) => {
+      if (change.operation === "replace") {
+        this.board.set(change.path.x, change.path.y, change.value);
+      }
+    });
+
+    this.room.listen("draw", (change) => {
+      if (change.operation === "replace") {
+        this.drawGame();
+      }
+    });
+
+    this.room.listen("winner", (change) => {
+      if (change.operation === "replace") {
+        this.showWinner(change.value);
+      }
+    });
+
+    this.room.onError.addOnce(() => {
+      this.emit('goto', TitleScreen)
+    });
   }
 
   transitionIn () {
@@ -54,13 +93,14 @@ export default class GameScreen extends PIXI.Container {
   }
 
   onJoin () {
+    console.log("JOIN!");
+
     // not waiting anymore!
     this.removeChild(this.waitingText)
 
     this.timeIcon = new PIXI.Sprite.fromImage('images/clock-icon.png')
     this.timeIcon.pivot.x = this.timeIcon.width / 2
     this.addChild(this.timeIcon)
-
 
     this.timeRemaining = new PIXI.Text("10", {
       font: "100px JennaSue",
@@ -93,41 +133,13 @@ export default class GameScreen extends PIXI.Container {
     this.room.send({x: x, y: y})
   }
 
-  onUpdate (state, patches) {
-    if (!this.countdownInterval && Object.keys(state.players).length === 2) {
-      this.onJoin()
-    }
-
-    if (patches) {
-      for (let i=0; i<patches.length; i++) {
-        let patch = patches[i]
-
-        if (patch.op === "replace" && patch.path === "/currentTurn") {
-          this.nextTurn( patch.value )
-
-        } else if (patch.op === "replace" && patch.path.indexOf("/board") === 0) {
-          let [_, x, y] = patch.path.match(/\/board\/(\d)\/(\d)/)
-          this.board.set(x, y, patch.value)
-
-        } else if (patch.op === "replace" && patch.path === "/draw") {
-          this.drawGame()
-
-        } else if (patch.op === "replace" && patch.path === "/winner") {
-          this.showWinner(patch.value)
-
-        }
-
-      }
-    }
-  }
-
   nextTurn (playerId) {
     tweener.add(this.statusText).to({
       y: Application.HEIGHT - Application.MARGIN + 10,
       alpha: 0
     }, 200, Tweener.ease.quintOut).then(() => {
 
-      if (playerId == colyseus.id) {
+      if (playerId == this.room.sessionId) {
         this.statusText.text = "Your move!"
 
       } else {
@@ -170,7 +182,9 @@ export default class GameScreen extends PIXI.Container {
 
   showWinner (clientId) {
     this.room.leave()
-    this.emit('goto', EndGameScreen, { won: colyseus.id == clientId })
+    this.emit('goto', EndGameScreen, {
+      won: (this.room.sessionId == clientId)
+    })
   }
 
   onResize () {
