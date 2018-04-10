@@ -1,4 +1,4 @@
-import PIXI from 'pixi.js'
+import * as PIXI from 'pixi.js'
 
 import Application from '../Application'
 import TitleScreen from './TitleScreen'
@@ -36,7 +36,6 @@ export default class GameScreen extends PIXI.Container {
 
     let numPlayers = 0;
     this.room.listen("players/:id", (change) => {
-      console.log("NEW PLAYER!");
       numPlayers++;
 
       if (numPlayers === 2) {
@@ -46,9 +45,8 @@ export default class GameScreen extends PIXI.Container {
 
     this.room.listen("currentTurn", (change) => {
       if (change.operation === "replace") {
-        setTimeout(() => {
-          this.nextTurn(change.value);
-        }, 10)
+        // go to next turn after a little delay, to ensure "onJoin" gets called before this.
+        setTimeout(() => this.nextTurn(change.value), 10)
       }
     });
 
@@ -93,8 +91,6 @@ export default class GameScreen extends PIXI.Container {
   }
 
   onJoin () {
-    console.log("JOIN!");
-
     // not waiting anymore!
     this.removeChild(this.waitingText)
 

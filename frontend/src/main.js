@@ -1,4 +1,4 @@
-import PIXI from 'pixi.js'
+import * as PIXI from 'pixi.js'
 import Application from './Application';
 import TitleScreen from './screens/TitleScreen'
 

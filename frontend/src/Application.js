@@ -1,7 +1,7 @@
-import PIXI from 'pixi.js'
+import * as PIXI from 'pixi.js'
 import SceneManager from './core/SceneManager'
 
-import Clock from 'clock-timer.js'
+import Clock from '@gamestdio/timer'
 window.clock = new Clock();
 
 import Tweener from 'tweener'
