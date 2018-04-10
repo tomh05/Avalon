@@ -8,13 +8,13 @@ import Tweener from 'tweener'
 window.Tweener = Tweener
 window.tweener = new Tweener();
 
+// define endpoint based on environment
+const endpoint = (window.location.hostname.indexOf("herokuapp") === -1)
+  ? "ws://localhost:3553" // development (local)
+  : `${window.location.protocol.replace("http", "ws")}//${window.location.hostname}` // production (remote)
+
 import { Client } from 'colyseus.js'
-window.colyseus = new Client(
-  // "wss://tictactoe-colyseus.herokuapp.com"
-  "ws://localhost:3553"
-  // window.location.protocol.replace("http", "ws") + "//" + window.location.hostname + ((window.location.port) ? ':' + window.location.port : '')
-  // window.location.protocol.replace("http", "ws") + "//" + process.env.
-)
+window.colyseus = new Client(endpoint);
 
 export default class Application {
 

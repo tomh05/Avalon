@@ -4,9 +4,8 @@
   "description": "Tic Tac Toe powered by Colyseus",
   "main": "src/game.js",
   "scripts": {
-    "webpack": "webpack",
-    "server": "node --harmony server/index.js",
-    "dev": "webpack-dev-server",
+    "start": "webpack-dev-server",
+    "build": "webpack",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
