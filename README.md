@@ -21,7 +21,7 @@ client, and one for the server:
 **Running the client**
 
 ```
-cd client
+cd frontend
 npm install
 npm start
 ```
