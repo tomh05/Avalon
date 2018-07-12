@@ -139,7 +139,7 @@ export default class GameScreen extends PIXI.Container {
         this.statusText.text = "Your move!"
 
       } else {
-        this.statusText.text = "Oppoent's turn..."
+        this.statusText.text = "Opponent's turn..."
       }
 
       this.statusText.x = Application.WIDTH / 2 - this.statusText.width / 2
