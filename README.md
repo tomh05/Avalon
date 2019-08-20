@@ -1,16 +1,15 @@
-# tic-tac-toe multiplayer (Colyseus v0.9.x)
+# tic-tac-toe multiplayer (Colyseus v0.11.x)
 
-Turn-based demonstration project using Colyseus Game Server (v0.9.x)
+Turn-based demonstration project using Colyseus Game Server (v0.11.x)
 
-Consider backing Colyseus development and its support on Patreon. I'll start
-making guided video tutorials once I reach a considerable amount of donations.
+If you want to see more examples like this and help Colyseus to grow, consider supporting my work on Patreon.
 
 <a href="https://www.patreon.com/bePatron?u=3301115"><img src="https://c5.patreon.com/external/logo/become_a_patron_button.png" /></a>
 
 ## Tooling
 
 - [webpack 4.x](http://npmjs.com/package/webpack)
-- [colyseus 0.9.x](http://colyseus.io)
+- [colyseus 0.11.x](http://colyseus.io)
 - [pixi.js v4](http://npmjs.com/package/pixi.js)
 
 ## Running it locally
@@ -37,12 +36,12 @@ npm start
 ## Important files to have look at
 
 - Server-side
-  - [registering room](server/index.js#L11)
-  - [room implementation](server/rooms/tictactoe.js)
+  - [registering room](server/index.ts#L19)
+  - [room and state implementation](server/rooms/tictactoe.ts)
 
 - Client-side
-  - [room connection](frontend/src/screens/GameScreen.js#L34)
-  - [patch handling](frontend/src/screens/GameScreen.js#L38-L69)
+  - [room connection](frontend/src/screens/GameScreen.js#L36)
+  - [receiving state updates](frontend/src/screens/GameScreen.js#L39-L69)
 
 ## License
 
