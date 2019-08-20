@@ -28,7 +28,16 @@ export default class Board extends PIXI.Container {
   }
 
   set (x, y, value) {
-    var move = new PIXI.Text(value, {
+    var label = "";
+
+    if (value === 1) {
+      label = "x";
+
+    } else if (value === 2) {
+      label = "o"
+    }
+
+    var move = new PIXI.Text(label, {
       font: "150px JennaSue",
       fill: '#000',
       textAlign: 'center'

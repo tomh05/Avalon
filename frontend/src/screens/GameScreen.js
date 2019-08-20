@@ -26,51 +26,47 @@ export default class GameScreen extends PIXI.Container {
 
     this.on('dispose', this.onDispose.bind(this))
 
+    this.board = new Board()
     this.connect();
 
     this.onResize()
   }
 
-  connect () {
-    this.room = colyseus.join('tictactoe')
+  async connect () {
+    this.room = await colyseus.joinOrCreate('tictactoe');
 
     let numPlayers = 0;
-    this.room.listen("players/:id", (change) => {
+    this.room.state.players.onAdd = () => {
       numPlayers++;
 
       if (numPlayers === 2) {
         this.onJoin();
       }
-    });
+    }
 
-    this.room.listen("currentTurn", (change) => {
-      if (change.operation === "replace") {
-        // go to next turn after a little delay, to ensure "onJoin" gets called before this.
-        setTimeout(() => this.nextTurn(change.value), 10)
-      }
-    });
+    this.room.state.board.onChange = (value, index) => {
+      const x = index % 3;
+      const y = Math.floor(index / 3);
+      this.board.set(x, y, value);
+    }
 
-    this.room.listen("board/:x/:y", (change) => {
-      if (change.operation === "replace") {
-        this.board.set(change.path.x, change.path.y, change.value);
-      }
-    });
+    this.room.state.onChange = (changes) => {
+      changes.forEach(change => {
+        if (change.field === "currentTurn") {
+          // go to next turn after a little delay, to ensure "onJoin" gets called before this.
+          setTimeout(() => this.nextTurn(change.value), 10)
 
-    this.room.listen("draw", (change) => {
-      if (change.operation === "replace") {
-        this.drawGame();
-      }
-    });
+        } else if (change.field === "draw") {
+          this.drawGame();
 
-    this.room.listen("winner", (change) => {
-      if (change.operation === "replace") {
-        this.showWinner(change.value);
-      }
-    });
+        } else if (change.field === "winner") {
+          this.showWinner(change.value);
 
-    this.room.onError.addOnce(() => {
-      this.emit('goto', TitleScreen)
-    });
+        }
+      });
+    }
+
+    this.room.onError.once(() => this.emit('goto', TitleScreen));
   }
 
   transitionIn () {
@@ -106,7 +102,6 @@ export default class GameScreen extends PIXI.Container {
     this.timeRemaining.pivot.x = this.timeRemaining.width / 2
     this.addChild(this.timeRemaining)
 
-    this.board = new Board()
     this.board.pivot.x = this.board.width / 2
     this.board.pivot.y = this.board.height / 2
     this.board.on('select', this.onSelect.bind(this))

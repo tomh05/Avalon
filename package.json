@@ -4,7 +4,7 @@
   "description": "HTML5 Tic-Tac-Toe Game powered by Colyseus",
   "scripts": {
     "install": "npm install --prefix ./server && npm install --prefix ./frontend && npm run build --prefix ./frontend",
-    "start": "npm run start-production --prefix ./server"
+    "start": "npm start --prefix ./server"
   },
   "author": "Endel Dreyer",
   "dependencies": {
