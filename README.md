@@ -1,6 +1,6 @@
-# tic-tac-toe multiplayer (Colyseus v0.11.x)
+# tic-tac-toe multiplayer (Colyseus v0.12.x)
 
-Turn-based demonstration project using Colyseus Game Server (v0.11.x)
+Turn-based demonstration project using Colyseus Game Server (v0.12.x)
 
 - [JavaScript/PixiJS](#javascript--pixijs)
 - [Defold Engine](#defold-engine)
@@ -32,7 +32,7 @@ npm start
 The JavaScript/PixiJS example uses:
 
 - [webpack 4.x](http://npmjs.com/package/webpack)
-- [colyseus 0.11.x](http://colyseus.io)
+- [colyseus 0.12.x](http://colyseus.io)
 - [pixi.js v4](http://npmjs.com/package/pixi.js)
 
 **Running the JavaScript/PixiJS client**
