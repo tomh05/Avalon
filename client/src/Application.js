@@ -23,8 +23,8 @@ export default class Application {
     this.background.pivot.x = this.background.width / 2
     this.background.pivot.y = this.background.height / 2
 
-    this.width = 640;
-    this.height = 640;
+    this.width = 800;
+    this.height = 600;
 
     this.scale = this.getMaxScale();
 
@@ -37,8 +37,8 @@ export default class Application {
 
     // this.renderer = new PIXI.WebGLRenderer(width, height, {
     this.renderer = new PIXI.WebGLRenderer(this.screenWidth, this.screenHeight, {
-      // resolution: window.devicePixelRatio,
-      antialias: false
+       //resolution: window.devicePixelRatio,
+      antialias: true
     })
     this.renderer.backgroundColor = 0xffffff
     document.body.appendChild(this.renderer.view)

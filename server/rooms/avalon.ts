@@ -15,6 +15,7 @@ class Player extends Schema {
     @type("string") id: string;
     @type("string") name: string;
     @type("boolean") ready: boolean;
+    @type("boolean") isParticipant: boolean;
 
     /*
   @filter(function(
@@ -40,13 +41,20 @@ class Player extends Schema {
     @type("string") role: string;
 }
 
+class Quest extends Schema {
+    @type("number") requiredParticipants: number;
+    @type("number") requiredFails: number;
+    @type("string") state: string;
+}
+
 class State extends Schema {
     @type("string") gamePhase: string;
+    @type("number") currentQuest: number;
     @type("string") currentKing: string;
     @type({ map: Player }) players = new MapSchema();
     @type(["string"]) playerOrder: string[] = new ArraySchema<string>();
-    @type(["number"]) quests: number[] = new ArraySchema<number>(0, 0, 0, 0, 0);
-    @type({ map: Player }) playersOnQuest = new MapSchema();
+    @type([Quest]) quests: Quest[] = new ArraySchema<Quest>();
+    @type({ map: Player }) questParticipants = new MapSchema();
 }
 
 export class Avalon extends Room<State> {
@@ -89,9 +97,55 @@ export class Avalon extends Room<State> {
             }
         }
 
-        if ( "name" in data && this.state.gamePhase == "LOBBY") {
+        else if ( "name" in data && this.state.gamePhase == "LOBBY") {
             this.state.players[client.sessionId].name = data.name; 
         }
+
+        else if ( "participant" in data ) {
+            if ( this.state.gamePhase == "CHOOSING_KNIGHTS" && client.sessionId == this.state.currentKing) {
+                this.toggleParticipant(data.participant);
+            }
+        }
+        else if ( "callVote" in data && this.state.gamePhase == "CHOOSING_KNIGHTS") {
+            this.setGamePhase("VOTING");
+        }
+
+        else if ( "vote" in data ) {
+            this.state.players[client.sessionId].name = data.vote; 
+            this.assessVote();
+        } else {
+            console.warn('unhandled message:', data);
+        }
+    }
+
+    toggleParticipant(playerId) {
+        const player = this.state.players[playerId]
+
+        if (!player) return;
+
+        if (player.isParticipant) {
+            player.isParticipant = false
+        } else {
+            console.log('num participants:',this.countParticipants())
+            console.log('cur quest:',this.state.currentQuest);
+            console.log('max participants:',this.state.quests[this.state.currentQuest].requiredParticipants);
+            if (this.countParticipants() < this.state.quests[this.state.currentQuest].requiredParticipants) {
+                player.isParticipant = true
+            } else {
+                console.log('max participants for this quest reached');
+            }
+        }
+    }
+
+    countParticipants() {
+            var numParticipants = 0;
+
+            for (let id in this.state.players) {
+                if (this.state.players[id].isParticipant) {
+                    numParticipants +=1;
+                }
+            }
+        return numParticipants;
     }
 
     checkEveryoneReady() {
@@ -107,23 +161,58 @@ export class Avalon extends Room<State> {
         return result;
     }
 
+    assessVote() {
+        let numberOfPlayers = Object.keys(this.state.players).length;
+        let ayes = 0;
+        let noes = 0;
+
+        // abort if someone hasn't voted yet
+        for (let id in this.state.players) {
+            switch (this.state.players[id].vote) {
+                case "APPROVE":
+                    ayes +=1;
+                    break;
+                case "REJECT":
+                    noes +=1;
+                    break;
+                default: 
+                    // somebody hasn't voted yet. Abort.
+                    return;
+            }
+        }
+
+        const votePassed = (ayes / numberOfPlayers) >= 0.5;
+
+        if (votePassed) {
+            this.onVotePassed();
+        } else {
+            this.onVoteFailed();
+        }
+        this.clearVotes();
+    }
+
+
     clearReadyStatus() {
-        console.log("clearing ready status")
         for (let id in this.state.players) {
             this.state.players[id].ready = false
-            console.log(`Player ${id} is ${this.state.players[id].ready}`);
         }
     }
 
+    clearVotes() {
+        for (let id in this.state.players) {
+            this.state.players[id].vote = ""
+        }
+    }
+
+
+
     startGame() {
         this.setGamePhase("ASSIGNING_ROLES");
-        this.checkEveryoneReady()
         this.lock();
         this.setupPlayOrder();
         this.setupRoles();
-        this.checkEveryoneReady()
+        this.setupQuests();
         this.setGamePhase("EXPLAINING_ROLES");
-        this.checkEveryoneReady()
     }
 
     setGamePhase(newPhase) {
@@ -170,6 +259,43 @@ export class Avalon extends Room<State> {
 
     }
 
+    setupQuests() {
+        this.state.currentQuest = 0;
+
+        let numberOfPlayers = Object.keys(this.state.players).length;
+        let questRequiredParticipants;
+        let questRequiredFails;
+
+        switch (numberOfPlayers) {
+            case 5:
+                questRequiredParticipants = [2,3,2,3,3];
+                questRequiredFails = [1,1,1,1,1];
+                break;
+            case 6:
+                questRequiredParticipants = [2,3,4,3,4];
+                questRequiredFails = [1,1,1,1,1];
+                break;
+            case 7:
+                questRequiredParticipants = [2,3,3,4,4];
+                questRequiredFails = [1,1,1,2,1];
+                break;
+            case 8:
+            case 9:
+            case 10:
+            default:
+                questRequiredParticipants = [3,4,4,5,5];
+                questRequiredFails = [1,1,1,2,1];
+                break;
+        }
+
+        for (let i=0; i<5; i++) {
+            const newQuest = new Quest();
+            newQuest.requiredParticipants = questRequiredParticipants[i];
+            newQuest.requiredFails = questRequiredFails[i];
+            this.state.quests.push(newQuest);
+        }
+    }
+
     getAllegiance(role:string) {
         if (role == "GENERIC_GOOD" || role == "MERLIN") {
             return "GOOD";
@@ -191,13 +317,20 @@ setTimeout(seconds:number) {
         this.setGamePhase("CHOOSING_KNIGHTS");
     }
 
-
-    checkWin (x, y, move) {
-        let won = false;
-        let quests = this.state.quests;
-
-        return won;
+    onVoteFailed() {
+        console.log('vote failed!');
+        const currentKingPosition = this.state.playerOrder.indexOf(this.state.currentKing)
+        const nextKingPosition = (currentKingPosition + 1) % this.state.playerOrder.length;
+        this.state.currentKing = this.state.playerOrder[nextKingPosition];
+        this.setGamePhase("CHOOSING_KNIGHTS");
     }
+    
+
+    onVotePassed() {
+        console.log('vote passed!');
+        this.setGamePhase("QUESTING");
+    }
+
 
     onLeave (client) {
         delete this.state.players[ client.sessionId ];

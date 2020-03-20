@@ -19,6 +19,15 @@ export default class Player extends PIXI.Container {
         //this.crown.pivot.x = this.crown.width / 2
         //this.crown.pivot.y = this.crown.height / 2
         this.addChild(this.crown)
+
+
+        this.shield = new PIXI.Sprite.fromImage('images/shield.png')
+        console.log('this',this.shield.scale);
+        this.shield.width =40
+        this.shield.height = 40
+        this.shield.x = - 80
+        this.shield.visible = false;
+        this.addChild(this.shield)
         
         this.nameLabel = new PIXI.Text(name, {
             font: "32px Pirata One",
@@ -27,20 +36,23 @@ export default class Player extends PIXI.Container {
         });
         this.nameLabel.y = 0;
         this.addChild(this.nameLabel);
-        //this.readyButton.on('click', this.onReadyClick.bind(this))
+
+        this.interactive = true
+        this.on('click', this.onClick.bind(this))
+
     }
 
-    /*
-    onReadyClick() {
-        this.ready = !this.ready;
-        this.readyButton.text =  (this.ready? "Ready" : "Not Ready") 
-        this.readyButton.style.fill =  (this.ready? "#009900" : "#990000") 
-        this.emit('ready', this.ready);
+    onClick() {
+        this.emit('playerClicked', this.id);
     }
-    */
 
     setKing(kingId) {
         this.isKing = (this.id == kingId) 
         this.crown.visible = this.isKing
+    }
+
+    setParticipant(isParticipant) {
+        this.isParticipant = isParticipant
+        this.shield.visible = isParticipant
     }
 }
