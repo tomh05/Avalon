@@ -1,5 +1,4 @@
 import * as PIXI from 'pixi.js'
-import TextInput from 'pixi-text-input'
 
 import Application from '../Application'
 import TitleScreen from './TitleScreen'
@@ -21,7 +20,8 @@ export default class GameScreen extends PIXI.Container {
             : "Waiting for enough players..."
 
         this.waitingText = new PIXI.Text(text, {
-            font: "40px Pirata One",
+        fontFamily: "Pirata One",
+        fontSize: 40,
             fill: '#000',
             textAlign: 'center'
         })
@@ -142,7 +142,8 @@ export default class GameScreen extends PIXI.Container {
     createCallVoteButton() {
         console.log('creating button');
         this.callVoteButton = new PIXI.Text("Call Vote", {
-            font: "40px Pirata One",
+            fontFamily: "Pirata One",
+        fontSize: 40,
             fill: '#000',
             textAlign: 'center'
         })

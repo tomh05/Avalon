@@ -8,14 +8,15 @@ export default class TitleScreen extends PIXI.Container {
   constructor () {
     super()
 
-    this.title = new PIXI.Sprite.fromImage("images/logo.png")
+    this.title = new PIXI.Sprite.from("images/logo.png")
     this.title.pivot.x = this.title.width / 2
     this.addChild(this.title)
 
     this.instructionText = new PIXI.Text("Click to Start", {
-      font: "62px Pirata One",
-      fill: 0x000,
-      textAlign: 'center'
+        fontFamily: "Pirata One",
+        fontSize: 62,
+        fill: 0x000,
+        textAlign: 'center'
     })
     this.instructionText.pivot.x = this.instructionText.width / 2
     this.instructionText.pivot.y = this.instructionText.height / 2

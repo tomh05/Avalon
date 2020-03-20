@@ -24,7 +24,7 @@ window.WebFontConfig = {
 
 /* jshint ignore:end */
 
-var loader = new PIXI.loaders.Loader();
+var loader = new PIXI.Loader();
 loader.add('logo', 'images/logo.png')
 loader.add('background', 'images/background.jpg')
 loader.add('colyseus', 'images/colyseus.png')

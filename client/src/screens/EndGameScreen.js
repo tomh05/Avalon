@@ -56,7 +56,7 @@ export default class EndGameScreen extends PIXI.Container {
     this.statusesText.pivot.y = this.statusesText.height / 2
     this.addChild(this.statusesText)
 
-    this.colyseus = new PIXI.Sprite.fromImage('images/colyseus.png')
+    this.colyseus = new PIXI.Sprite.from('images/colyseus.png')
     this.colyseus.pivot.x = this.colyseus.width / 2
     this.addChild(this.colyseus)
 

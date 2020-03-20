@@ -19,7 +19,7 @@ window.colyseus = new Client(endpoint);
 export default class Application {
 
   constructor () {
-    this.background = new PIXI.Sprite.fromImage('images/background.jpg')
+    this.background = new PIXI.Sprite.from('images/background.jpg')
     this.background.pivot.x = this.background.width / 2
     this.background.pivot.y = this.background.height / 2
 
@@ -35,9 +35,10 @@ export default class Application {
     this.scaledWidth = this.screenWidth / this.scale
     this.scaledHeight = this.screenHeight / this.scale
 
-    // this.renderer = new PIXI.WebGLRenderer(width, height, {
-    this.renderer = new PIXI.WebGLRenderer(this.screenWidth, this.screenHeight, {
+    this.renderer = new PIXI.Renderer({
        //resolution: window.devicePixelRatio,
+      width: this.screenWidth,
+      height: this.screenHeight,
       antialias: true
     })
     this.renderer.backgroundColor = 0xffffff

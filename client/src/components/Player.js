@@ -10,7 +10,7 @@ export default class Player extends PIXI.Container {
         this.setName = false;
         this.isKing = false;
 
-        this.crown = new PIXI.Sprite.fromImage('images/crown.png')
+        this.crown = new PIXI.Sprite.from('images/crown.png')
         console.log('this',this.crown.scale);
         this.crown.width =40
         this.crown.height = 30
@@ -21,7 +21,7 @@ export default class Player extends PIXI.Container {
         this.addChild(this.crown)
 
 
-        this.shield = new PIXI.Sprite.fromImage('images/shield.png')
+        this.shield = new PIXI.Sprite.from('images/shield.png')
         console.log('this',this.shield.scale);
         this.shield.width =40
         this.shield.height = 40
@@ -30,7 +30,8 @@ export default class Player extends PIXI.Container {
         this.addChild(this.shield)
         
         this.nameLabel = new PIXI.Text(name, {
-            font: "32px Pirata One",
+        fontFamily: "Pirata One",
+        fontSize: 32,
             fill: 0x000,
             textAlign: 'left'
         });

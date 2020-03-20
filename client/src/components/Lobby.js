@@ -1,4 +1,5 @@
 import * as PIXI from 'pixi.js'
+import {TextInput} from 'pixi-textinput-v5'
 
 export default class Lobby extends PIXI.Container {
 
@@ -8,18 +9,19 @@ export default class Lobby extends PIXI.Container {
         this.ready = false;
         this.setName = false;
 
-        //this.background = new PIXI.Sprite.fromImage('images/board.png')
+        //this.background = new PIXI.Sprite.from('images/board.png')
         //this.addChild(this.background)
         //
         this.playerList = new PIXI.Text("", {
-            font: "32px Pirata One",
+            fontFamily: "Pirata One",
+            fontSize: 32,
             fill: 0x000,
             textAlign: 'left'
         });
         this.playerList.y = 0;
         this.addChild(this.playerList);
         
-        this.nameField = new PIXI.TextInput( { 
+        this.nameField = new TextInput( { 
             input: {
                 fontSize: '25pt',
                 padding: '14px',
@@ -39,7 +41,8 @@ export default class Lobby extends PIXI.Container {
         this.addChild(this.nameField);
 
         this.readyButton = new PIXI.Text("Not Ready", {
-            font: "62px Pirata One",
+        fontFamily: "Pirata One",
+        fontSize: 62,
             fill: "#990000",
             textAlign: 'center'
         });

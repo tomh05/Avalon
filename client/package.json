@@ -27,7 +27,8 @@
     "@gamestdio/timer": "^1.1.9",
     "colyseus.js": "^0.12.0",
     "pixi-text-input": "^1.0.4",
-    "pixi.js": "^4.7.3",
+    "pixi-textinput-v5": "^4.0.0-beta.10",
+    "pixi.js": "^5.1.6",
     "tweener": "^0.1.3"
   },
   "babel": {

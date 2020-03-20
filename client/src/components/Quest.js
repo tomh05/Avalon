@@ -13,7 +13,8 @@ export default class Quest extends PIXI.Container {
         const participantCountLabelText = questState.requiredParticipants + (questState.requiredFails > 1 ? "*": "");
 
         this.participantCountLabel = new PIXI.Text(participantCountLabelText, {
-            font: "32px Pirata One",
+        fontFamily: "Pirata One",
+        fontSize: 32,
             fill: 0x000,
             textAlign: 'left'
         });

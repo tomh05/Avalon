@@ -8,11 +8,12 @@ export default class RoleExplainer extends PIXI.Container {
         console.log('my role is', role);
         this.ready = false;
 
-        //this.background = new PIXI.Sprite.fromImage('images/board.png')
+        //this.background = new PIXI.Sprite.from('images/board.png')
         //this.addChild(this.background)
         //
         this.youAre = new PIXI.Text("You are", {
-            font: "32px Pirata One",
+            fontFamily: "Pirata One",
+            fontSize: 32,
             fill: 0x000,
             textAlign: 'center'
         });
@@ -20,13 +21,16 @@ export default class RoleExplainer extends PIXI.Container {
         this.addChild(this.youAre);
 
         this.roleName = new PIXI.Text("", {
+            fontFamily: "Pirata One",
+            fontSize: 62,
             font: "62px Pirata One",
             fill: 0x000,
             textAlign: 'center'
         });
 
         this.roleDescription = new PIXI.Text("", {
-            font: "32px Pirata One",
+            fontFamily: "Pirata One",
+            fontSize: 32,
             fill: 0x000,
             textAlign: 'center'
         });
@@ -55,7 +59,8 @@ export default class RoleExplainer extends PIXI.Container {
         this.addChild(this.roleDescription);
         
         this.readyButton = new PIXI.Text("OK", {
-            font: "62px Pirata One",
+            fontFamily: "Pirata One",
+            fontSize: 62,
             fill: "#330000",
             textAlign: 'center'
         });

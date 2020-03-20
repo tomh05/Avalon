@@ -20,7 +20,9 @@ export default class VotingBox extends PIXI.Container {
         this.addChild(this.rejectBox);
 
         this.approveText = new PIXI.Text("Approve", {
-            font: "32px Pirata One",
+fontFamily: "Pirata One",
+            fontSize: 32,
+
             fill: 0x000,
             textAlign: 'left'
         });
@@ -30,7 +32,8 @@ export default class VotingBox extends PIXI.Container {
         this.addChild(this.approveText);
 
         this.rejectText = new PIXI.Text("Reject", {
-            font: "32px Pirata One",
+            fontFamily: "Pirata One",
+            fontSize: 32,
             fill: 0x000,
             textAlign: 'left'
         });
