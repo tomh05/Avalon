@@ -12,8 +12,8 @@ export default class TitleScreen extends PIXI.Container {
     this.title.pivot.x = this.title.width / 2
     this.addChild(this.title)
 
-    this.instructionText = new PIXI.Text("touch to start", {
-      font: "62px JennaSue",
+    this.instructionText = new PIXI.Text("Click to Start", {
+      font: "62px Pirata One",
       fill: 0x000,
       textAlign: 'center'
     })

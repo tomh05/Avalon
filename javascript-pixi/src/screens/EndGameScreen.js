@@ -30,7 +30,7 @@ export default class EndGameScreen extends PIXI.Container {
     LocalStorage.set( incrementAttribute, LocalStorage.get(incrementAttribute)+1 )
 
     this.title = new PIXI.Text(titleText, {
-      font: "132px JennaSue",
+      font: "132px Courier New",
       fill: 0x000,
       textAlign: 'center'
     })
@@ -38,7 +38,7 @@ export default class EndGameScreen extends PIXI.Container {
     this.addChild(this.title)
 
     this.instructionText = new PIXI.Text("touch to play again", {
-      font: "52px JennaSue",
+      font: "52px Courier New",
       fill: 0x000,
       textAlign: 'center'
     })
@@ -48,7 +48,7 @@ export default class EndGameScreen extends PIXI.Container {
 
     let statuses = `Win ${ LocalStorage.get('win') } | Draw ${ LocalStorage.get('draw') } | Loss ${ LocalStorage.get('loss') } `
     this.statusesText = new PIXI.Text(statuses, {
-      font: "52px JennaSue",
+      font: "52px Courier New",
       fill: 0x000,
       textAlign: 'center'
     })

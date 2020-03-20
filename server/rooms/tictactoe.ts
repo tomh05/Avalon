@@ -4,150 +4,211 @@ import { type, Schema, MapSchema, ArraySchema } from '@colyseus/schema';
 const TURN_TIMEOUT = 10
 const BOARD_WIDTH = 3;
 
+const MIN_PLAYERS = 1;
+const MAX_PLAYERS = 10;
+
+enum Allegiances { GOOD, EVIL, UNDEFINED };
+//enum Roles { GENERIC_GOOD, GENERIC_EVIL, MERLIN, ASSASSIN };
+//enum STATES {LOBBY, ASSIGNING_ROLES, EXPLAINING_ROLES, CHOOSING_KNIGHTS, VOTING, REVEALING_VOTE, QUESTING, REVEALING_RESULT}
+
+class Player extends Schema {
+    @type("string") id: string;
+    @type("string") name: string;
+    @type("boolean") ready: boolean;
+
+    /*
+  @filter(function(
+    this: Player,
+    client: Client,
+    value?: Player['allegiance'], // the value of the field to be filtered. (value of `number` field)
+    root?: Schema // the root state Schema instance
+  ) {
+    return  this.id === client.sessionId;
+  });
+
+
+  @filter(function(
+    this: Player,
+    client: Client,
+    value?: Player['role'], // the value of the field to be filtered. (value of `number` field)
+    root?: Schema // the root state Schema instance
+  ) {
+    return  this.id === client.sessionId;
+  });
+     */
+    @type("string") allegiance: string;
+    @type("string") role: string;
+}
+
 class State extends Schema {
-  @type("string") currentTurn: string;
-  @type({ map: "string" }) players = new MapSchema<boolean>();
-  @type(["number"]) board: number[] = new ArraySchema<number>(0, 0, 0, 0, 0, 0, 0, 0, 0);
-  @type("string") winner: string;
-  @type("boolean") draw: boolean;
+    @type("string") gamePhase: string;
+    @type("string") currentKing: string;
+    @type({ map: Player }) players = new MapSchema();
+    @type(["string"]) playerOrder: string[] = new ArraySchema<string>();
+    @type(["number"]) quests: number[] = new ArraySchema<number>(0, 0, 0, 0, 0);
+    @type({ map: Player }) playersOnQuest = new MapSchema();
 }
 
 export class TicTacToe extends Room<State> {
-  maxClients = 2;
-  randomMoveTimeout: Delayed;
+    maxClients = 10;
+    timeout: Delayed;
 
-  onCreate () {
-    this.setState(new State())
-  }
-
-  onJoin (client: Client) {
-    this.state.players[client.sessionId] = client.sessionId;
-
-    if (Object.keys(this.state.players).length === 2) {
-      this.state.currentTurn = client.sessionId;
-      this.setAutoMoveTimeout();
-
-      // lock this room for new users
-      this.lock();
-    }
-  }
-
-  onMessage (client: Client, data: any) {
-    if (this.state.winner || this.state.draw) {
-      return false;
+    onCreate () {
+        this.setState(new State())
+        this.setGamePhase("LOBBY")
     }
 
-    if (client.sessionId === this.state.currentTurn) {
-      const playerIds = Object.keys(this.state.players);
+    onJoin (client: Client) {
+        const newPlayer = new Player();
+        newPlayer.id = client.sessionId;
+        //newPlayer.name = `Player ${Object.keys(this.state.players).length + 1}`
+        this.state.players[client.sessionId] = newPlayer;
 
-      const index = data.x + BOARD_WIDTH * data.y;
+        if (Object.keys(this.state.players).length === this.maxClients) {
+            // lock this room for new users
+            this.lock();
+        }
+    }
 
-      if (this.state.board[index] === 0) {
-        const move = (client.sessionId === playerIds[0]) ? 1 : 2;
-        this.state.board[index] = move;
+    onMessage (client: Client, data: any) {
+        console.log("got message!", data);
 
-        if (this.checkWin(data.x, data.y, move)) {
-          this.state.winner = client.sessionId;
+        if ( "ready" in data) {
+            this.state.players[client.sessionId].ready = data.ready; 
 
-        } else if (this.checkBoardComplete()) {
-          this.state.draw = true;
-
-        } else {
-          // switch turn
-          const otherPlayerSessionId = (client.sessionId === playerIds[0]) ? playerIds[1] : playerIds[0];
-
-          this.state.currentTurn = otherPlayerSessionId;
-
-          this.setAutoMoveTimeout();
+            if (this.checkEveryoneReady()) {
+                this.clearReadyStatus() 
+                if ( this.state.gamePhase == "LOBBY") {
+                    this.startGame()
+                }
+                else if (this.state.gamePhase == "EXPLAINING_ROLES") {
+                    {
+                        this.assignFirstKing()
+                    }
+                }
+            }
         }
 
-      }
-    }
-  }
-
-  setAutoMoveTimeout() {
-    if (this.randomMoveTimeout) {
-      this.randomMoveTimeout.clear();
-    }
-
-    this.randomMoveTimeout = this.clock.setTimeout(() => this.doRandomMove(), TURN_TIMEOUT * 1000);
-  }
-
-  checkBoardComplete () {
-    return this.state.board
-      .filter(item => item === 0)
-      .length === 0;
-  }
-
-  doRandomMove () {
-    const sessionId = this.state.currentTurn;
-    for (let x=0; x<BOARD_WIDTH; x++) {
-      for (let y=0; y<BOARD_WIDTH; y++) {
-        const index = x + BOARD_WIDTH * y;
-        if (this.state.board[index] === 0) {
-          this.onMessage({ sessionId } as Client, { x, y });
-          return;
+        if ( "name" in data && this.state.gamePhase == "LOBBY") {
+            this.state.players[client.sessionId].name = data.name; 
         }
-      }
-    }
-  }
-
-  checkWin (x, y, move) {
-    let won = false;
-    let board = this.state.board;
-
-    // horizontal
-    for(let y = 0; y < BOARD_WIDTH; y++){
-      const i = x + BOARD_WIDTH * y;
-      if (board[i] !== move) { break; }
-      if (y == BOARD_WIDTH-1) {
-        won = true;
-      }
     }
 
-    // vertical
-    for(let x = 0; x < BOARD_WIDTH; x++){
-      const i = x + BOARD_WIDTH * y;
-      if (board[i] !== move) { break; }
-      if (x == BOARD_WIDTH-1) {
-        won = true;
-      }
-    }
+    checkEveryoneReady() {
+        let numberOfPlayers = Object.keys(this.state.players).length;
+        let result = true;
 
-    // cross forward
-    if(x === y) {
-      for(let xy = 0; xy < BOARD_WIDTH; xy++){
-        const i = xy + BOARD_WIDTH * xy;
-        if(board[i] !== move) { break; }
-        if(xy == BOARD_WIDTH-1) {
-          won = true;
+        if (numberOfPlayers < MIN_PLAYERS || numberOfPlayers > MAX_PLAYERS) result = false;
+
+        for (let id in this.state.players) {
+            if (!this.state.players[id].ready) result = false;
         }
-      }
+        console.log('checkEveryoneReady result is', result);
+        return result;
     }
 
-    // cross backward
-    for(let x = 0;x<BOARD_WIDTH; x++){
-      const y =(BOARD_WIDTH-1)-x;
-      const i = x + BOARD_WIDTH * y;
-      if(board[i] !== move) { break; }
-      if(x == BOARD_WIDTH-1){
-        won = true;
-      }
+    clearReadyStatus() {
+        console.log("clearing ready status")
+        for (let id in this.state.players) {
+            this.state.players[id].ready = false
+            console.log(`Player ${id} is ${this.state.players[id].ready}`);
+        }
     }
 
-    return won;
-  }
-
-  onLeave (client) {
-    delete this.state.players[ client.sessionId ];
-
-    if (this.randomMoveTimeout) this.randomMoveTimeout.clear()
-
-    let remainingPlayerIds = Object.keys(this.state.players)
-    if (remainingPlayerIds.length > 0) {
-      this.state.winner = remainingPlayerIds[0]
+    startGame() {
+        this.setGamePhase("ASSIGNING_ROLES");
+        this.checkEveryoneReady()
+        this.lock();
+        this.setupPlayOrder();
+        this.setupRoles();
+        this.checkEveryoneReady()
+        this.setGamePhase("EXPLAINING_ROLES");
+        this.checkEveryoneReady()
     }
-  }
 
+    setGamePhase(newPhase) {
+        console.log(`Changing phase from ${this.state.gamePhase} to ${newPhase}`)
+        this.state.gamePhase = newPhase
+
+    }
+
+    setupPlayOrder() {
+        let index=0;
+        for (let id in this.state.players) {
+            const player: Player = this.state.players[id];
+            console.log(id, player);
+            this.state.playerOrder[index] = id;
+            index+=1;
+        }
+        console.log("player order is",this.state.playerOrder);
+
+    }
+
+    setupRoles() {
+
+        let numberOfPlayers = Object.keys(this.state.players).length;
+        let roles = ["MERLIN", "ASSASSIN", "GENERIC_EVIL"];
+        if (numberOfPlayers > 6) {
+            roles.push("GENERIC_EVIL");
+        }
+        if (numberOfPlayers == 10) {
+            roles.push("GENERIC_EVIL");
+        }
+        while (roles.length < numberOfPlayers) {
+            roles.push("GENERIC_GOOD");
+        }
+
+        // shuffle roles
+        roles.sort(function() { return 0.5 - Math.random();})
+
+        // assign a role to each player
+        for (let id in this.state.players) {
+            const newRole = roles.pop();
+            this.state.players[id].role = newRole
+            this.state.players[id].allegiance = this.getAllegiance(newRole);
+        }
+
+    }
+
+    getAllegiance(role:string) {
+        if (role == "GENERIC_GOOD" || role == "MERLIN") {
+            return "GOOD";
+        }
+        return "EVIL";
+    }
+
+
+
+    /*
+setTimeout(seconds:number) {
+    if (this.timeout) this.timeout.clear()
+    this.timeout = this.clock.setTimeout(() => this.onTimeoutExpired(), seconds * 1000);
+}
+     */
+
+    assignFirstKing() {
+        this.state.currentKing = this.state.playerOrder[Math.floor(Math.random() * this.state.playerOrder.length)];
+        this.setGamePhase("CHOOSING_KNIGHTS");
+    }
+
+
+    checkWin (x, y, move) {
+        let won = false;
+        let quests = this.state.quests;
+
+        return won;
+    }
+
+    onLeave (client) {
+        delete this.state.players[ client.sessionId ];
+
+        // allow more users to join
+        this.unlock();
+
+        let remainingPlayerIds = Object.keys(this.state.players)
+        if (remainingPlayerIds.length > 0) {
+            //this.state.winner = remainingPlayerIds[0]
+        }
+    }
 }
 
