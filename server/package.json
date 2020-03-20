@@ -1,7 +1,7 @@
 {
-  "name": "colyseus-starter",
+  "name": "Avalon",
   "version": "1.0.0",
-  "description": "Colyseus Server - Minimal example",
+  "description": "Avalon Game Server",
   "main": "index.js",
   "scripts": {
     "start": "ts-node ./index.ts"

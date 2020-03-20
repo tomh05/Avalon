@@ -2,7 +2,7 @@ import http from 'http';
 import express from 'express';
 import cors from "cors";
 import { Server } from 'colyseus';
-import { TicTacToe } from "./rooms/tictactoe"
+import { Avalon } from "./rooms/avalon"
 
 const app = express();
 const port = Number(process.env.PORT || 3553);
@@ -16,7 +16,7 @@ const gameServer = new Server({
   express: app
 });
 
-gameServer.define('tictactoe', TicTacToe);
+gameServer.define('avalon', Avalon);
 gameServer.listen(port);
 
 app.use(express.static(__dirname + "/../frontend/public"));

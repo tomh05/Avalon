@@ -43,7 +43,7 @@ export default class GameScreen extends PIXI.Container {
     }
 
     async connect () {
-        this.room = await colyseus.joinOrCreate('tictactoe')
+        this.room = await colyseus.joinOrCreate('avalon')
 
         let numPlayers = 0;
         this.room.state.players.onAdd = () => {

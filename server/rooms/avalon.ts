@@ -49,7 +49,7 @@ class State extends Schema {
     @type({ map: Player }) playersOnQuest = new MapSchema();
 }
 
-export class TicTacToe extends Room<State> {
+export class Avalon extends Room<State> {
     maxClients = 10;
     timeout: Delayed;
 

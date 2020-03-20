@@ -1,7 +1,7 @@
 {
-  "name": "tictactoe-frontend",
+  "name": "avalon-frontend",
   "version": "1.0.0",
-  "description": "Tic Tac Toe powered by Colyseus",
+  "description": "Avalon Game frontend",
   "main": "src/game.js",
   "scripts": {
     "start": "webpack-dev-server",
