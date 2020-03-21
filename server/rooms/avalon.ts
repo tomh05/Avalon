@@ -91,12 +91,8 @@ export class Avalon extends Room<State> {
                 this.clearReadyStatus() 
                 if ( this.state.gamePhase == "LOBBY") {
                     this.startGame()
-                }
-                else if (this.state.gamePhase == "EXPLAINING_ROLES") {
-                    {
-                        this.assignFirstKing()
-                    }
-
+                } else if (this.state.gamePhase == "EXPLAINING_ROLES") {
+                    this.assignFirstKing()
                 } else if ( this.state.gamePhase == "REVEALING_VOTE") {
                     if (this.state.votePassed) {
                         this.setGamePhase("QUESTING");
@@ -104,6 +100,8 @@ export class Avalon extends Room<State> {
                         this.assignNextKing();
                         this.setGamePhase("CHOOSING_KNIGHTS");
                     }
+                } else if ( this.state.gamePhase == "REVEALING_QUEST") {
+                    this.endTurn();
                 }
             }
         } else if ( "name" in data && this.state.gamePhase == "LOBBY") {
@@ -231,8 +229,8 @@ export class Avalon extends Room<State> {
         } else {
             this.state.quests[this.state.currentQuest].outcome = "FAIL"
         }
-        this.clearQuestContributions();
-        this.endTurn();
+
+        this.setGamePhase("REVEALING_QUEST");
     }
 
     clearReadyStatus() {
@@ -254,6 +252,7 @@ export class Avalon extends Room<State> {
     }
 
     endTurn() {
+        this.clearQuestContributions();
         switch (this.checkVictory()) {
             case "GOOD":
                 this.setGamePhase("ASSASSINATION_ATTEMPT");

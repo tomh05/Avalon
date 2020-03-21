@@ -165,12 +165,10 @@ export default class GameScreen extends PIXI.Container {
             this.votingBox.y = 3 * Application.HEIGHT / 4
             this.votingBox.on('vote', this.onVote.bind(this))
             this.addChild(this.votingBox);
-        } 
-        else if (newPhase == "REVEALING_VOTE") {
+        } else if (newPhase == "REVEALING_VOTE") {
             this.removeChild(this.votingBox)
             this.board.revealVotes(this.room.state.players);
-            this.createProceedButton();
-
+            this.createProceedButton(this.room.state.votePassed ? "Start Quest" : "Next King")
             this.addChild(this.proceedButton)
         }
         else if (newPhase == "QUESTING") {
@@ -189,6 +187,9 @@ export default class GameScreen extends PIXI.Container {
                 this.questingBox.on('questContribution', this.onQuestContribution.bind(this))
                 this.addChild(this.questingBox);
             }
+        }
+        else if (newPhase == "REVEALING_QUEST") {
+            this.createProceedButton("Proceed")
         }
     }
 
@@ -209,9 +210,8 @@ export default class GameScreen extends PIXI.Container {
 
     }
 
-    createProceedButton() {
-        const buttonText = this.room.state.votePassed ? "Start Quest" : "Next King"
-        this.proceedButton = new PIXI.Text(buttonText, {
+    createProceedButton(text) {
+        this.proceedButton = new PIXI.Text(text, {
             fontFamily: "Pirata One",
             fontSize: 40,
             fill: '#000',
