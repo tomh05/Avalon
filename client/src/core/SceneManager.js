@@ -15,14 +15,16 @@ export default class SceneManager extends PIXI.Container {
   }
 
   goTo (screenClass, options = {}) {
+      console.log('goto!', screenClass.name)
+      console.log('cur!', this.currentScene)
     var screenName = screenClass.name
 
-    if (!this.sceneInstanceMap[ screenName ]) {
+    //if (true || !this.sceneInstanceMap[ screenName ]) {
       this.sceneInstanceMap[ screenName ] = new screenClass(options)
       this.sceneInstanceMap[ screenName ].__callbacks = {}
 
       this.bindEvents( this.sceneInstanceMap[ screenName ] )
-    }
+    //}
 
     if (this.currentScene) {
       this.nextScene = this.sceneInstanceMap[ screenName ]

@@ -13,7 +13,7 @@ export default class Board extends PIXI.Container {
 
         this.ellipseMinRadius = 140;
         this.ellipseAspect = 2;
-        this.ellipsePadding = 30;
+        this.ellipsePadding = 60;
 
         this.ready = false;
         this.setName = false;
@@ -58,10 +58,11 @@ export default class Board extends PIXI.Container {
             const playerOrderIndex = (myIndex + i) % numPlayers
             const playerData = players[playerOrder[playerOrderIndex]];
 
-            const newPlayerSprite = new Player(playerData.id, playerData.name);
+            const clientRole = players[this.clientId].role
+            const newPlayerSprite = new Player(playerData.id, playerData.name, playerData.role, clientRole);
             this.playerSprites[playerData.id] = newPlayerSprite;
             const angle = 2 * Math.PI * i / numPlayers
-            newPlayerSprite.pivot.x = newPlayerSprite.width / 2;
+            //newPlayerSprite.pivot.x = newPlayerSprite.width / 2;
             newPlayerSprite.pivot.y = newPlayerSprite.height / 2;
             newPlayerSprite.x = -(this.ellipseMinRadius + this.ellipsePadding ) * this.ellipseAspect * Math.sin(angle);
             newPlayerSprite.y = (this.ellipseMinRadius + this.ellipsePadding) * Math.cos(angle);
@@ -79,6 +80,15 @@ export default class Board extends PIXI.Container {
     updatePlayers(players) {
         for (let pid in players) {
             this.playerSprites[pid].setParticipant(players[pid].isParticipant);
+        }
+    }
+
+    updateQuests(quests) {
+        console.log('updating quests')
+        for (let i=0; i< this.questSprites.length; i++) {
+
+        console.log(`quest ${i} outcome ${quests[i].outcome}`)
+            this.questSprites[i].setOutome(quests[i].outcome)
         }
     }
 

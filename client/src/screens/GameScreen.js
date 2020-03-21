@@ -6,6 +6,7 @@ import EndGameScreen from './EndGameScreen'
 
 import Board from '../components/Board'
 import VotingBox from '../components/VotingBox'
+import QuestingBox from '../components/QuestingBox'
 import Lobby from '../components/Lobby'
 import RoleExplainer from '../components/RoleExplainer'
 
@@ -13,7 +14,6 @@ export default class GameScreen extends PIXI.Container {
 
     constructor () {
         super()
-
 
         let text = (colyseus.readyState === WebSocket.CLOSED)
             ? "Couldn't connect."
@@ -28,7 +28,6 @@ export default class GameScreen extends PIXI.Container {
         this.waitingText.pivot.x = this.waitingText.width / 2
         this.waitingText.pivot.y = this.waitingText.height / 2
         this.addChild(this.waitingText)
-
 
         this.lobby = new Lobby();
         this.lobby.pivot.x = this.lobby.width / 2
@@ -45,7 +44,13 @@ export default class GameScreen extends PIXI.Container {
     }
 
     async connect () {
+        try {
         this.room = await colyseus.joinOrCreate('avalon')
+        } catch (e) {
+            console.log('going to title',e)
+            this.emit('goto', TitleScreen);
+            return;
+        }
 
         let numPlayers = 0;
         this.room.state.players.onAdd = () => {
@@ -74,6 +79,12 @@ export default class GameScreen extends PIXI.Container {
                     }
                     if (this.board)  {
                         this.board.updatePlayers(change.value);
+                    }
+                }
+
+                else if (change.field === "quests") {
+                    if (this.board)  {
+                        this.board.updateQuests(change.value);
                     }
                 }
 
@@ -119,6 +130,14 @@ export default class GameScreen extends PIXI.Container {
                 this.removeChild(this.roleExplainer)
                 this.createBoard();
             }
+            if (oldPhase == "VOTING") {
+                this.removeChild(this.votingBox)
+            }
+            if (oldPhase == "QUESTING") {
+                if (this.questingBox) {
+                    this.removeChild(this.questingBox)
+                }
+            }
 
             this.board.setKing(this.room.state.currentKing);
 
@@ -129,21 +148,42 @@ export default class GameScreen extends PIXI.Container {
         }
 
         else if (newPhase == "VOTING") {
+            if (this.callVoteButton) {
+                this.removeChild(this.callVoteButton)
+            }
+
             this.votingBox = new VotingBox();
-            this.votingBox.pivot.x = this.votingBox.width / 2
-            this.votingBox.pivot.y = this.votingBox.height / 2
             this.votingBox.x = Application.WIDTH / 2
-            this.votingBox.y = Application.HEIGHT / 2
+            this.votingBox.y = 3 * Application.HEIGHT / 4
             this.votingBox.on('vote', this.onVote.bind(this))
             this.addChild(this.votingBox);
+        } 
+        else if (newPhase == "REVEALING_VOTE") {
+            this.removeChild(this.votingBox)
+            this.createStartQuestButton();
+            this.addChild(this.startQuestButton)
+        }
+        else if (newPhase == "QUESTING") {
+            if (this.startQuestButton) {
+                this.removeChild(this.startQuestButton)
+            }
+            console.log("questing",this.room.state.players);
+            const thisPlayer = this.room.state.players[this.room.sessionId]
+            if (thisPlayer.isParticipant) {
+                console.log('alleg',thisPlayer.allegiance)
+                this.questingBox = new QuestingBox((thisPlayer.allegiance == "GOOD"));
+                this.questingBox.x = Application.WIDTH / 2
+                this.questingBox.y =  Application.HEIGHT / 2
+                this.questingBox.on('questContribution', this.onQuestContribution.bind(this))
+                this.addChild(this.questingBox);
+            }
         }
     }
 
     createCallVoteButton() {
-        console.log('creating button');
         this.callVoteButton = new PIXI.Text("Call Vote", {
             fontFamily: "Pirata One",
-        fontSize: 40,
+            fontSize: 40,
             fill: '#000',
             textAlign: 'center'
         })
@@ -157,9 +197,29 @@ export default class GameScreen extends PIXI.Container {
 
     }
 
+    createStartQuestButton() {
+        this.startQuestButton = new PIXI.Text("Start Quest", {
+            fontFamily: "Pirata One",
+            fontSize: 40,
+            fill: '#000',
+            textAlign: 'center'
+        })
+        this.startQuestButton.pivot.x = this.startQuestButton.width / 2
+        this.startQuestButton.pivot.y = this.startQuestButton.height / 2
+        this.startQuestButton.x = Application.WIDTH / 2
+        this.startQuestButton.y = 5 * Application.HEIGHT / 6
+        this.startQuestButton.interactive = true;
+        this.addChild(this.startQuestButton)
+        this.startQuestButton.on('click', this.onStartQuest.bind(this))
+
+    }
+
     onCallVote() {
-        //if (this.room.state.playersOnQuest.length == this.room.state.quests[this.room.state.currentQuest])
         this.room.send({callVote: true});
+    }
+
+    onStartQuest() {
+        this.room.send({startQuest: true});
     }
 
     createBoard() {
@@ -169,7 +229,7 @@ export default class GameScreen extends PIXI.Container {
         console.log('width', this.board.pivot.x);
         console.log('pivot y', this.board.pivot.y);
         this.board.x = Application.WIDTH / 2
-        this.board.y = Application.HEIGHT / 2
+        this.board.y = Application.HEIGHT / 3
         //this.board.on('nameChanged', this.onNameChanged.bind(this))
         //this.board.on('ready', this.onReadyClick.bind(this))
         //
@@ -192,6 +252,9 @@ export default class GameScreen extends PIXI.Container {
         this.room.send({vote: vote});
     }
 
+    onQuestContribution(decision) {
+        this.room.send({questContribution: decision});
+    }
 
 
 
@@ -270,12 +333,17 @@ export default class GameScreen extends PIXI.Container {
 
         if (this.board) {
             this.board.x = Application.WIDTH / 2
-            this.board.y = 200
+            this.board.y = Application.HEIGHT / 3
         }
         if (this.callVoteButton) {
             this.callVoteButton.x = Application.WIDTH / 2
             this.callVoteButton.y =  Application.HEIGHT -100
         }
+        if (this.votingBox) {
+        this.votingBox.x = Application.WIDTH / 2
+        this.votingBox.y = 3 * Application.HEIGHT / 4
+        }
+
     }
 
     onDispose () {

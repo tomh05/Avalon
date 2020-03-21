@@ -38,7 +38,7 @@ export default class RoleExplainer extends PIXI.Container {
         switch (role) {
             case "GENERIC_GOOD":
                 this.roleName.text = "A loyal servant of Arthur"
-                this.roleDescription.text = "Your mission is to prevent Minions of Mordred from sabotaging King Arthur's quests."
+                this.roleDescription.text = "Your mission is to prevent Minions of Mordred\nfrom sabotaging King Arthur's quests."
                 break;
             case "GENERIC_EVIL":
                 this.roleName.text = "A Minion of Mordred"
@@ -47,9 +47,10 @@ export default class RoleExplainer extends PIXI.Container {
             case "MERLIN":
                 this.roleName.text = "Merlin"
                 this.roleDescription.text = "You know who the Minions of Mordred are,\nbut will cause the kingdom to fall if\nthey discover your identity."
+                break;
             case "ASSASSIN":
                 this.roleName.text = "The Assassin"
-                this.roleDescription.text = "You wish to sabotage King Arthur's quests,\nby sabotaging quests, or by finding and killing Merlin.\nYou will know the identity of the other minions."
+                this.roleDescription.text = "You wish to harm King Arthur,\nby sabotaging quests, or by finding and killing Merlin.\nYou will know the identity of the other minions."
                 break;
             default:
         }

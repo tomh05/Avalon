@@ -93,7 +93,11 @@ export default class Application {
   }
 
   getMaxScale () {
+      if (window.innerWidth * 3 < window.innerHeight * 4) {
     return Math.min(window.innerWidth / this.width, 1)
+      } else {
+    return Math.min(window.innerHeight / this.height, 1)
+      }
   }
 
   update () {
