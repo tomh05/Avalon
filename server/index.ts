@@ -19,5 +19,5 @@ const gameServer = new Server({
 gameServer.define('avalon', Avalon);
 gameServer.listen(port);
 
-app.use(express.static(__dirname + "/../frontend/public"));
+app.use(express.static(__dirname + "/../client/public"));
 console.log(`Listening on ws://localhost:${ port }`);

@@ -1,5 +1,5 @@
 {
-  "name": "Avalon",
+  "name": "avalon-server",
   "version": "1.0.0",
   "description": "Avalon Game Server",
   "main": "index.js",
