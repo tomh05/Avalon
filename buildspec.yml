@@ -1,0 +1,23 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 12
+    commands:
+      - echo Installing the Client
+      - cd client
+      - npm install
+      - echo Installing the Server
+      - cd ../server
+      - npm install
+      - cd ..
+  build:
+    commands:
+      - echo Building the Client
+      - cd client
+      - npm build
+artifacts:
+  files:
+    - server
+    - client/public
