@@ -16,7 +16,13 @@ phases:
     commands:
       - echo Building the Client
       - cd client
-      - npm build
+      - npm run build
+      - echo Building the Server
+      - cd ../server
+      - npm run build
+      - cd ..
+
+
 artifacts:
   files:
     - '**/*'
