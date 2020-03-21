@@ -20,9 +20,8 @@ phases:
       - echo Building the Server
       - cd ../server
       - npm run build
+      - ls
       - cd ..
-
-
 artifacts:
   files:
     - '**/*'
