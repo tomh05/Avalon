@@ -19,5 +19,4 @@ phases:
       - npm build
 artifacts:
   files:
-    - server
-    - client/public
+    - '**/*'
