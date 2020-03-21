@@ -76,4 +76,12 @@ export default class Player extends PIXI.Container {
         this.isParticipant = isParticipant
         this.shield.visible = isParticipant
     }
+
+    revealVote(vote) {
+        this.nameLabel.style.fill = (vote == "APPROVE") ? 0x24ab3a : 0x9e2b11;
+    }
+
+    clearVote() {
+        this.nameLabel.style.fill = 0x000
+    }
 }

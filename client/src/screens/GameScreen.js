@@ -139,6 +139,14 @@ export default class GameScreen extends PIXI.Container {
                 }
             }
 
+            if (oldPhase == "REVEALING_VOTE") {
+                this.board.clearVotes();
+            }
+
+            if (this.proceedButton) {
+                this.removeChild(this.proceedButton)
+            }
+
             this.board.setKing(this.room.state.currentKing);
 
             if (this.room.state.currentKing == this.room.sessionId) {
@@ -160,14 +168,18 @@ export default class GameScreen extends PIXI.Container {
         } 
         else if (newPhase == "REVEALING_VOTE") {
             this.removeChild(this.votingBox)
-            this.createStartQuestButton();
-            this.addChild(this.startQuestButton)
+            this.board.revealVotes(this.room.state.players);
+            this.createProceedButton();
+
+            this.addChild(this.proceedButton)
         }
         else if (newPhase == "QUESTING") {
-            if (this.startQuestButton) {
-                this.removeChild(this.startQuestButton)
+            if (this.proceedButton) {
+                this.removeChild(this.proceedButton)
             }
+
             console.log("questing",this.room.state.players);
+            this.board.clearVotes();
             const thisPlayer = this.room.state.players[this.room.sessionId]
             if (thisPlayer.isParticipant) {
                 console.log('alleg',thisPlayer.allegiance)
@@ -197,30 +209,34 @@ export default class GameScreen extends PIXI.Container {
 
     }
 
-    createStartQuestButton() {
-        this.startQuestButton = new PIXI.Text("Start Quest", {
+    createProceedButton() {
+        const buttonText = this.room.state.votePassed ? "Start Quest" : "Next King"
+        this.proceedButton = new PIXI.Text(buttonText, {
             fontFamily: "Pirata One",
             fontSize: 40,
             fill: '#000',
             textAlign: 'center'
         })
-        this.startQuestButton.pivot.x = this.startQuestButton.width / 2
-        this.startQuestButton.pivot.y = this.startQuestButton.height / 2
-        this.startQuestButton.x = Application.WIDTH / 2
-        this.startQuestButton.y = 5 * Application.HEIGHT / 6
-        this.startQuestButton.interactive = true;
-        this.addChild(this.startQuestButton)
-        this.startQuestButton.on('click', this.onStartQuest.bind(this))
+        this.proceedButton.pivot.x = this.proceedButton.width / 2
+        this.proceedButton.pivot.y = this.proceedButton.height / 2
+        this.proceedButton.x = Application.WIDTH / 2
+        this.proceedButton.y = 5 * Application.HEIGHT / 6
+        this.proceedButton.interactive = true;
+        this.addChild(this.proceedButton)
+        this.proceedButton.on('click', this.onProceed.bind(this))
+    }
 
+
+    onProceed() {
+
+        this.proceedButton.text = "Waiting for others..."
+        this.onReadyClick(true)
     }
 
     onCallVote() {
         this.room.send({callVote: true});
     }
 
-    onStartQuest() {
-        this.room.send({startQuest: true});
-    }
 
     createBoard() {
         this.board = new Board(this.room.state, this.room.sessionId);
@@ -340,8 +356,13 @@ export default class GameScreen extends PIXI.Container {
             this.callVoteButton.y =  Application.HEIGHT -100
         }
         if (this.votingBox) {
-        this.votingBox.x = Application.WIDTH / 2
-        this.votingBox.y = 3 * Application.HEIGHT / 4
+            this.votingBox.x = Application.WIDTH / 2
+            this.votingBox.y = 3 * Application.HEIGHT / 4
+        }
+
+        if (this.proceedButton) {
+            this.proceedButton.x = Application.WIDTH / 2
+            this.proceedButton.y = 5 * Application.HEIGHT / 6
         }
 
     }

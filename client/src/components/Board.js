@@ -95,5 +95,19 @@ export default class Board extends PIXI.Container {
     handlePlayerClick(clickedPlayerID) {
         this.emit('participantToggle', clickedPlayerID);
     }
+
+
+    revealVotes(players) {
+        for (let pid in this.playerSprites) {
+            this.playerSprites[pid].revealVote(players[pid].vote);
+        }
+    }
+
+    clearVotes() {
+        for (let pid in this.playerSprites) {
+            this.playerSprites[pid].clearVote();
+        }
+
+    }
            
 }

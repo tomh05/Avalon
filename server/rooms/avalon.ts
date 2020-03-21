@@ -51,6 +51,7 @@ class Quest extends Schema {
 
 class State extends Schema {
     @type("string") gamePhase: string;
+    @type("boolean") votePassed: boolean;
     @type("number") currentQuest: number;
     @type("string") currentKing: string;
     @type({ map: Player }) players = new MapSchema();
@@ -95,6 +96,14 @@ export class Avalon extends Room<State> {
                     {
                         this.assignFirstKing()
                     }
+
+                } else if ( this.state.gamePhase == "REVEALING_VOTE") {
+                    if (this.state.votePassed) {
+                        this.setGamePhase("QUESTING");
+                    } else {
+                        this.assignNextKing();
+                        this.setGamePhase("CHOOSING_KNIGHTS");
+                    }
                 }
             }
         } else if ( "name" in data && this.state.gamePhase == "LOBBY") {
@@ -105,16 +114,15 @@ export class Avalon extends Room<State> {
             }
         } else if ( "callVote" in data && this.state.gamePhase == "CHOOSING_KNIGHTS") {
             if (this.countParticipants() ==  this.state.quests[this.state.currentQuest].requiredParticipants) {
-            this.setGamePhase("VOTING");
+                this.setGamePhase("VOTING");
             } else {
-            console.warn('wrong number of participants:', this.countParticipants());
+                console.warn('wrong number of participants:', this.countParticipants());
             }
 
         } else if ( "vote" in data ) {
             this.state.players[client.sessionId].vote = data.vote
             this.assessVote();
-        } else if ( "startQuest" in data && this.state.gamePhase == "REVEALING_VOTE") {
-            this.setGamePhase("QUESTING");
+
         } else if ( "questContribution" in data && this.state.gamePhase == "QUESTING") {
             this.state.players[client.sessionId].questContribution = data.questContribution 
             this.assessQuest();
@@ -143,13 +151,13 @@ export class Avalon extends Room<State> {
     }
 
     countParticipants() {
-            var numParticipants = 0;
+        var numParticipants = 0;
 
-            for (let id in this.state.players) {
-                if (this.state.players[id].isParticipant) {
-                    numParticipants +=1;
-                }
+        for (let id in this.state.players) {
+            if (this.state.players[id].isParticipant) {
+                numParticipants +=1;
             }
+        }
         return numParticipants;
     }
 
@@ -187,12 +195,9 @@ export class Avalon extends Room<State> {
         console.log("percentage in favour: ", 100 *  ayes/numberOfPlayers)
         const votePassed = ((ayes / numberOfPlayers) >= 0.5)
 
-        if (votePassed) {
-            this.onVotePassed();
-        } else {
-            this.onVoteFailed();
-        }
-        this.clearVotes();
+        this.state.votePassed = votePassed;
+        this.setGamePhase("REVEALING_VOTE");
+
     }
 
     assessQuest() {
@@ -249,12 +254,12 @@ export class Avalon extends Room<State> {
     }
 
     endTurn() {
-
-        // TODO: if won.... else...
         switch (this.checkVictory()) {
             case "GOOD":
+                this.setGamePhase("ASSASSINATION_ATTEMPT");
                 break;
             case "EVIL":
+                this.setGamePhase("EVIL_VICTORY");
                 break;
             default:
                 this.state.currentQuest += 1;
@@ -264,6 +269,20 @@ export class Avalon extends Room<State> {
     }
 
     checkVictory() {
+        // if 3 quests fail, EVIL wins
+        // if 3 quests succeed, Good wins unless the assassin chooses merlin
+
+        let numFails = this.state.quests.filter(q=> q.outcome == "FAIL").length;
+        let numSuccesses = this.state.quests.filter(q=> q.outcome == "SUCCESS").length;
+
+        if (numFails >= 3) {
+            return "EVIL"
+        }
+
+        if (numSuccesses >= 3) {
+            return "GOOD"
+        }
+
         return "GAME_CONTINUES";
     }
 
@@ -279,7 +298,6 @@ export class Avalon extends Room<State> {
     setGamePhase(newPhase) {
         console.log(`Changing phase from ${this.state.gamePhase} to ${newPhase}`)
         this.state.gamePhase = newPhase
-
     }
 
     setupPlayOrder() {
@@ -387,19 +405,6 @@ setTimeout(seconds:number) {
         const nextKingPosition = (currentKingPosition + 1) % this.state.playerOrder.length;
         this.state.currentKing = this.state.playerOrder[nextKingPosition];
     }
-
-    onVoteFailed() {
-        console.log('vote failed!');
-        this.assignNextKing();
-        this.setGamePhase("CHOOSING_KNIGHTS");
-    }
-    
-
-    onVotePassed() {
-        console.log('vote passed!');
-        this.setGamePhase("REVEALING_VOTE");
-    }
-
 
     onLeave (client) {
         delete this.state.players[ client.sessionId ];
