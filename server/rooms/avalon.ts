@@ -4,7 +4,7 @@ import { type, Schema, MapSchema, ArraySchema } from '@colyseus/schema';
 const TURN_TIMEOUT = 10
 const BOARD_WIDTH = 3;
 
-const MIN_PLAYERS = 1;
+const MIN_PLAYERS = 5;
 const MAX_PLAYERS = 10;
 
 enum Allegiances { GOOD, EVIL, UNDEFINED };
