@@ -60,6 +60,7 @@ export default class Player extends PIXI.Container {
         this.interactive = true
         this.buttonMode = true
         this.on('click', this.onClick.bind(this))
+        this.on('touchstart', this.onClick.bind(this))
 
     }
 
