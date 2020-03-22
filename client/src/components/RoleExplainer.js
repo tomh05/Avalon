@@ -1,4 +1,5 @@
 import * as PIXI from 'pixi.js'
+import Button from './Button'
 
 export default class RoleExplainer extends PIXI.Container {
 
@@ -15,9 +16,10 @@ export default class RoleExplainer extends PIXI.Container {
             fontFamily: "Pirata One",
             fontSize: 32,
             fill: 0x000,
-            textAlign: 'center'
+            align: 'center'
         });
         this.youAre.y = 0;
+        this.youAre.anchor.set(0.5,0.5);
         this.addChild(this.youAre);
 
         this.roleName = new PIXI.Text("", {
@@ -25,15 +27,19 @@ export default class RoleExplainer extends PIXI.Container {
             fontSize: 62,
             font: "62px Pirata One",
             fill: 0x000,
-            textAlign: 'center'
+            align: 'center'
         });
+
+        this.roleName.anchor.set(0.5,0.5);
 
         this.roleDescription = new PIXI.Text("", {
             fontFamily: "Pirata One",
             fontSize: 32,
             fill: 0x000,
-            textAlign: 'center'
+            align: 'center'
         });
+
+        this.roleDescription.anchor.set(0.5,0.5);
 
         switch (role) {
             case "GENERIC_GOOD":
@@ -46,27 +52,21 @@ export default class RoleExplainer extends PIXI.Container {
                 break;
             case "MERLIN":
                 this.roleName.text = "Merlin"
-                this.roleDescription.text = "You know who the Minions of Mordred are,\nbut will cause the kingdom to fall if\nthey discover your identity."
+                this.roleDescription.text = "You know who the Minions of Mordred are,\nbut the kingdom will to fall if they\ndiscover your identity."
                 break;
             case "ASSASSIN":
                 this.roleName.text = "The Assassin"
-                this.roleDescription.text = "You wish to harm King Arthur,\nby sabotaging quests, or by finding and killing Merlin.\nYou will know the identity of the other minions."
+                this.roleDescription.text = "You wish to harm King Arthur by sabotaging quests,\nor by finding and killing Merlin.\nYou will know the identity of the other minions."
                 break;
             default:
         }
-        this.roleName.y = 100;
+        this.roleName.y = 80;
         this.roleDescription.y = 200;
         this.addChild(this.roleName);
         this.addChild(this.roleDescription);
         
-        this.readyButton = new PIXI.Text("OK", {
-            fontFamily: "Pirata One",
-            fontSize: 62,
-            fill: "#330000",
-            textAlign: 'center'
-        });
+        this.readyButton = new Button("OK", 0xffffff, 0x330000);
         this.readyButton.y = 340;
-        this.readyButton.interactive = true;
 
         this.addChild(this.readyButton);
 
@@ -87,7 +87,7 @@ export default class RoleExplainer extends PIXI.Container {
 
     onReadyClick() {
         console.log('ready was clicked in explainer!')
-        this.readyButton.text = "waiting for others..."
+        this.readyButton.update("waiting for others...", 0xAAAAAA, 0x666666);
         this.emit('ready', true);
     }
 

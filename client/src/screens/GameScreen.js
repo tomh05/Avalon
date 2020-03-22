@@ -9,6 +9,7 @@ import VotingBox from '../components/VotingBox'
 import QuestingBox from '../components/QuestingBox'
 import Lobby from '../components/Lobby'
 import RoleExplainer from '../components/RoleExplainer'
+import Button from '../components/Button'
 
 export default class GameScreen extends PIXI.Container {
 
@@ -19,24 +20,22 @@ export default class GameScreen extends PIXI.Container {
             ? "Couldn't connect."
             : "Waiting for enough players..."
 
-        this.waitingText = new PIXI.Text(text, {
+        this.explainerText = new PIXI.Text(text, {
         fontFamily: "Pirata One",
         fontSize: 40,
-            fill: '#000',
+            fill: '#300',
             textAlign: 'center'
         })
-        this.waitingText.pivot.x = this.waitingText.width / 2
-        this.waitingText.pivot.y = this.waitingText.height / 2
-        this.addChild(this.waitingText)
+        this.explainerText.anchor.set(0.5,0.5)
+        this.addChild(this.explainerText)
 
         this.lobby = new Lobby();
         this.lobby.pivot.x = this.lobby.width / 2
-        this.lobby.pivot.y = this.lobby.height / 2
+        this.lobby.y = 50
         this.lobby.on('nameChanged', this.onNameChanged.bind(this))
         this.lobby.on('ready', this.onReadyClick.bind(this))
         this.addChild(this.lobby)
 
-        console.log("waitingText",this.waitingText)
 
         this.on('dispose', this.onDispose.bind(this))
         this.connect()
@@ -57,7 +56,7 @@ export default class GameScreen extends PIXI.Container {
             numPlayers++;
 
             if (numPlayers >= 2) {
-                this.waitingText.text = "Waiting for all players to be ready";
+                this.explainerText.text = "Waiting for all players to be ready";
             }
         }
 
@@ -107,7 +106,7 @@ export default class GameScreen extends PIXI.Container {
         console.log(`Handling phase change from ${oldPhase} to ${newPhase}`)
         if (newPhase == "EXPLAINING_ROLES") {
 
-            this.removeChild(this.waitingText)
+            this.setExplainerText("")
             this.removeChild(this.lobby)
 
             //setTimeout(() => this.nextTurn(change.value), 10)
@@ -115,10 +114,8 @@ export default class GameScreen extends PIXI.Container {
             this.clientAllegiance = this.room.state.players[this.room.sessionId].allegiance;
 
             this.roleExplainer = new RoleExplainer(this.clientRole, this.clientAllegiance);
-            this.roleExplainer.pivot.x = this.roleExplainer.width / 2
-            this.roleExplainer.pivot.y = this.roleExplainer.height / 2
             this.roleExplainer.x = Application.WIDTH / 2
-            this.roleExplainer.y = Application.HEIGHT / 2
+            this.roleExplainer.y = 100
             this.roleExplainer.on('ready', this.onReadyClick.bind(this))
             this.addChild(this.roleExplainer);
             console.log("my role is", this.clientRole);
@@ -133,11 +130,6 @@ export default class GameScreen extends PIXI.Container {
             if (oldPhase == "VOTING") {
                 this.removeChild(this.votingBox)
             }
-            if (oldPhase == "QUESTING") {
-                if (this.questingBox) {
-                    this.removeChild(this.questingBox)
-                }
-            }
 
             if (oldPhase == "REVEALING_VOTE") {
                 this.board.clearVotes();
@@ -150,7 +142,11 @@ export default class GameScreen extends PIXI.Container {
             this.board.setKing(this.room.state.currentKing);
 
             if (this.room.state.currentKing == this.room.sessionId) {
+
+                this.setExplainerText(`You are King! Select ${this.room.state.quests[this.room.state.currentQuest].requiredParticipants} knights to go on the quest.`)
                 this.createCallVoteButton();
+            } else {
+                this.setExplainerText(`King ${this.room.state.players[this.room.state.currentKing].name} is preparing the quest.`)
             }
 
         }
@@ -162,16 +158,26 @@ export default class GameScreen extends PIXI.Container {
 
             this.votingBox = new VotingBox();
             this.votingBox.x = Application.WIDTH / 2
-            this.votingBox.y = 3 * Application.HEIGHT / 4
+            this.votingBox.y = 400
             this.votingBox.on('vote', this.onVote.bind(this))
             this.addChild(this.votingBox);
+
+            this.setExplainerText(`Do you support the king's decision?`)
         } else if (newPhase == "REVEALING_VOTE") {
             this.removeChild(this.votingBox)
             this.board.revealVotes(this.room.state.players);
+
+            if (this.room.state.votePassed) {
+                this.setExplainerText(`The vote passed! The quest goes ahead.`)
+            } else {
+                this.setExplainerText(`The king was overthrown! A new king will be chosen.`)
+            }
+
             this.createProceedButton(this.room.state.votePassed ? "Start Quest" : "Next King")
             this.addChild(this.proceedButton)
         }
         else if (newPhase == "QUESTING") {
+
             if (this.proceedButton) {
                 this.removeChild(this.proceedButton)
             }
@@ -180,56 +186,53 @@ export default class GameScreen extends PIXI.Container {
             this.board.clearVotes();
             const thisPlayer = this.room.state.players[this.room.sessionId]
             if (thisPlayer.isParticipant) {
+
+                this.setExplainerText(`Choose your contribution to the quest.`)
                 console.log('alleg',thisPlayer.allegiance)
                 this.questingBox = new QuestingBox((thisPlayer.allegiance == "GOOD"));
                 this.questingBox.x = Application.WIDTH / 2
                 this.questingBox.y =  Application.HEIGHT / 2
                 this.questingBox.on('questContribution', this.onQuestContribution.bind(this))
                 this.addChild(this.questingBox);
+            } else {
+                this.setExplainerText(`Waiting for those on the quest to determine its fate...`)
             }
         }
         else if (newPhase == "REVEALING_QUEST") {
+                if (this.questingBox) {
+                    this.removeChild(this.questingBox)
+                }
+
+            if (this.room.state.quests[this.room.state.currentQuest].outcome == "SUCCESS") {
+            this.setExplainerText(`The quest passed!`)
+            } else {
+            this.setExplainerText(`The quest failed!`)
+            }
             this.createProceedButton("Proceed")
         }
     }
 
     createCallVoteButton() {
-        this.callVoteButton = new PIXI.Text("Call Vote", {
-            fontFamily: "Pirata One",
-            fontSize: 40,
-            fill: '#000',
-            textAlign: 'center'
-        })
-        this.callVoteButton.pivot.x = this.callVoteButton.width / 2
-        this.callVoteButton.pivot.y = this.callVoteButton.height / 2
+        this.callVoteButton = new Button("Call Vote", 0xffffff, 0x330000);
         this.callVoteButton.x = Application.WIDTH / 2
-        this.callVoteButton.y = 5 * Application.HEIGHT / 6
-        this.callVoteButton.interactive = true;
+        this.callVoteButton.y = 480
         this.addChild(this.callVoteButton)
         this.callVoteButton.on('click', this.onCallVote.bind(this))
 
     }
 
     createProceedButton(text) {
-        this.proceedButton = new PIXI.Text(text, {
-            fontFamily: "Pirata One",
-            fontSize: 40,
-            fill: '#000',
-            textAlign: 'center'
-        })
-        this.proceedButton.pivot.x = this.proceedButton.width / 2
-        this.proceedButton.pivot.y = this.proceedButton.height / 2
+
+        this.proceedButton = new Button("Proceed", 0xffffff, 0x330000);
         this.proceedButton.x = Application.WIDTH / 2
-        this.proceedButton.y = 5 * Application.HEIGHT / 6
-        this.proceedButton.interactive = true;
+        this.proceedButton.y = 480
         this.addChild(this.proceedButton)
         this.proceedButton.on('click', this.onProceed.bind(this))
     }
 
 
     onProceed() {
-
-        this.proceedButton.text = "Waiting for others..."
+        this.proceedButton.update("waiting for others...", 0xAAAAAA, 0x666666);
         this.onReadyClick(true)
     }
 
@@ -240,12 +243,10 @@ export default class GameScreen extends PIXI.Container {
 
     createBoard() {
         this.board = new Board(this.room.state, this.room.sessionId);
-        //this.board.pivot.x = this.board.width / 2
-        //this.board.pivot.y = this.board.height / 2
         console.log('width', this.board.pivot.x);
         console.log('pivot y', this.board.pivot.y);
         this.board.x = Application.WIDTH / 2
-        this.board.y = Application.HEIGHT / 3
+        this.board.y = 200
         //this.board.on('nameChanged', this.onNameChanged.bind(this))
         //this.board.on('ready', this.onReadyClick.bind(this))
         //
@@ -275,8 +276,8 @@ export default class GameScreen extends PIXI.Container {
 
 
     transitionIn () {
-        tweener.add(this.waitingText).from({ alpha: 0 }, 300, Tweener.ease.quintOut)
-        return tweener.add(this.waitingText.scale).from({x: 1.5, y: 1.5}, 300, Tweener.ease.quintOut)
+        tweener.add(this.explainerText).from({ alpha: 0 }, 300, Tweener.ease.quintOut)
+        return tweener.add(this.explainerText.scale).from({x: 1.5, y: 1.5}, 300, Tweener.ease.quintOut)
     }
 
     transitionOut () {
@@ -287,7 +288,7 @@ export default class GameScreen extends PIXI.Container {
             return tweener.add(this.statusText).to({ y: this.statusText.y + 10, alpha: 0 }, 300, Tweener.ease.quintOut)
 
         } else {
-            return tweener.add(this.waitingText).to({ alpha: 0 }, 300, Tweener.ease.quintOut)
+            return tweener.add(this.explainerText).to({ alpha: 0 }, 300, Tweener.ease.quintOut)
         }
     }
 
@@ -332,41 +333,39 @@ export default class GameScreen extends PIXI.Container {
     }
 
     onResize () {
-        if (this.waitingText) {
-            this.waitingText.x = Application.WIDTH / 2
-            this.waitingText.y = Application.HEIGHT / 6
+        if (this.explainerText) {
+            this.explainerText.x = Application.WIDTH / 2
+            this.explainerText.y = 560
         }
 
         if (this.lobby) {
             this.lobby.x = Application.WIDTH / 2
-            this.lobby.y = Application.HEIGHT / 2
         }
 
         if (this.roleExplainer) {
             this.roleExplainer.x = Application.WIDTH / 2
-            this.roleExplainer.y = Application.HEIGHT / 2
         }
 
         if (this.board) {
             this.board.x = Application.WIDTH / 2
-            this.board.y = Application.HEIGHT / 3
         }
         if (this.callVoteButton) {
             this.callVoteButton.x = Application.WIDTH / 2
-            this.callVoteButton.y =  Application.HEIGHT -100
         }
         if (this.votingBox) {
             this.votingBox.x = Application.WIDTH / 2
-            this.votingBox.y = 3 * Application.HEIGHT / 4
         }
 
         if (this.proceedButton) {
             this.proceedButton.x = Application.WIDTH / 2
-            this.proceedButton.y = 5 * Application.HEIGHT / 6
         }
 
     }
 
+    setExplainerText(newText) {
+        this.explainerText.text = newText
+
+    }
     onDispose () {
     }
 }

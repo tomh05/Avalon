@@ -199,7 +199,6 @@ export class Avalon extends Room<State> {
     }
 
     assessQuest() {
-
         console.log('assessing quest')
         let fails = 0;
 
@@ -400,6 +399,7 @@ setTimeout(seconds:number) {
     }
 
     assignNextKing() {
+        this.clearVotes()
         const currentKingPosition = this.state.playerOrder.indexOf(this.state.currentKing)
         const nextKingPosition = (currentKingPosition + 1) % this.state.playerOrder.length;
         this.state.currentKing = this.state.playerOrder[nextKingPosition];
