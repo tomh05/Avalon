@@ -11,8 +11,8 @@ export default class Board extends PIXI.Container {
         this.state = state;
         this.clientId = clientId
 
-        this.ellipseMinRadius = 140;
-        this.ellipseAspect = 2;
+        this.ellipseMinRadius = 100;
+        this.ellipseAspect = 2.5;
         this.ellipsePadding = 60;
 
         this.ready = false;
@@ -24,8 +24,6 @@ export default class Board extends PIXI.Container {
 
         this.addQuests(this.state.quests);
         this.addPlayers(this.state.players, this.state.playerOrder)
-
-        
     }
 
     drawTable() {
@@ -63,9 +61,8 @@ export default class Board extends PIXI.Container {
             this.playerSprites[playerData.id] = newPlayerSprite;
             const angle = 2 * Math.PI * i / numPlayers
             //newPlayerSprite.pivot.x = newPlayerSprite.width / 2;
-            newPlayerSprite.pivot.y = newPlayerSprite.height / 2;
             newPlayerSprite.x = -(this.ellipseMinRadius + this.ellipsePadding ) * this.ellipseAspect * Math.sin(angle);
-            newPlayerSprite.y = (this.ellipseMinRadius + this.ellipsePadding) * Math.cos(angle);
+            newPlayerSprite.y = -20 + (this.ellipseMinRadius + this.ellipsePadding) * Math.cos(angle);
             newPlayerSprite.on('playerClicked', this.handlePlayerClick.bind(this))
             this.addChild(newPlayerSprite);
         }
@@ -93,7 +90,7 @@ export default class Board extends PIXI.Container {
     }
 
     handlePlayerClick(clickedPlayerID) {
-        this.emit('participantToggle', clickedPlayerID);
+        this.emit('playerSelected', clickedPlayerID);
     }
 
 
@@ -107,7 +104,11 @@ export default class Board extends PIXI.Container {
         for (let pid in this.playerSprites) {
             this.playerSprites[pid].clearVote();
         }
-
     }
-           
+
+    revealRoles() {
+        for (let pid in this.playerSprites) {
+            this.playerSprites[pid].revealRole();
+        }
+    }
 }

@@ -54,10 +54,11 @@ class State extends Schema {
     @type("boolean") votePassed: boolean;
     @type("number") currentQuest: number;
     @type("string") currentKing: string;
+    @type("string") assassinVictim: string;
+    @type("string") gameWinner: string;
     @type({ map: Player }) players = new MapSchema();
     @type(["string"]) playerOrder: string[] = new ArraySchema<string>();
     @type([Quest]) quests: Quest[] = new ArraySchema<Quest>();
-    @type({ map: Player }) questParticipants = new MapSchema();
 }
 
 export class Avalon extends Room<State> {
@@ -106,9 +107,12 @@ export class Avalon extends Room<State> {
             }
         } else if ( "name" in data && this.state.gamePhase == "LOBBY") {
             this.state.players[client.sessionId].name = data.name; 
-        } else if ( "participant" in data ) {
+        } else if ( "playerSelected" in data ) {
             if ( this.state.gamePhase == "CHOOSING_KNIGHTS" && client.sessionId == this.state.currentKing) {
-                this.toggleParticipant(data.participant);
+                this.toggleParticipant(data.playerSelected);
+            }
+            else if ( this.state.gamePhase == "ASSASSINATION_ATTEMPT" && this.state.players[client.sessionId].role == "ASSASSIN") {
+                this.state.assassinVictim = data.playerSelected;
             }
         } else if ( "callVote" in data && this.state.gamePhase == "CHOOSING_KNIGHTS") {
             if (this.countParticipants() ==  this.state.quests[this.state.currentQuest].requiredParticipants) {
@@ -124,6 +128,9 @@ export class Avalon extends Room<State> {
         } else if ( "questContribution" in data && this.state.gamePhase == "QUESTING") {
             this.state.players[client.sessionId].questContribution = data.questContribution 
             this.assessQuest();
+        } else if ( "assassinate" in data && this.state.gamePhase == "ASSASSINATION_ATTEMPT") {
+                this.state.gameWinner = (this.state.players[this.state.assassinVictim].role == "MERLIN") ? "EVIL" : "GOOD"
+                this.setGamePhase("GAME_END")
         } else {
             console.warn('unhandled message:', data);
         }
@@ -244,20 +251,22 @@ export class Avalon extends Room<State> {
         }
     }
 
-    clearQuestContributions() {
+    clearQuest() {
         for (let id in this.state.players) {
             this.state.players[id].questContribution = ""
+            this.state.players[id].isParticipant = false
         }
     }
 
     endTurn() {
-        this.clearQuestContributions();
+        this.clearQuest()
         switch (this.checkVictory()) {
             case "GOOD":
                 this.setGamePhase("ASSASSINATION_ATTEMPT");
                 break;
             case "EVIL":
-                this.setGamePhase("EVIL_VICTORY");
+                this.state.gameWinner = "EVIL"
+                this.setGamePhase("GAME_END")
                 break;
             default:
                 this.state.currentQuest += 1;

@@ -4,7 +4,6 @@ export default class Player extends PIXI.Container {
 
     constructor (id, name, role, clientRole) {
         super()
-
         this.id = id;
         this.ready = false;
         this.setName = false;
@@ -19,23 +18,23 @@ export default class Player extends PIXI.Container {
         this.crown.visible = false;
         this.addChild(this.crown)
 
-        if (["MERLIN", "GENERIC_EVIL", "ASSASSIN"].includes(clientRole) &&
-            ["GENERIC_EVIL", "ASSASSIN"].includes(role) ) {
+        if ( ["GENERIC_EVIL", "ASSASSIN"].includes(role) ) {
             this.skull = new PIXI.Sprite.from('images/skull.png')
             this.skull.width =40
             this.skull.height = 40
             this.skull.x = -80
             this.skull.y = -20
+            this.skull.visible = ["MERLIN", "GENERIC_EVIL", "ASSASSIN"].includes(clientRole)
             this.addChild(this.skull)
         }
 
-        if (["MERLIN", "PERCIVAL"].includes(clientRole) &&
-            ["MERLIN", "MORGANA"].includes(role) ) {
+        if ( ["MERLIN", "MORGANA"].includes(role) ) {
             this.wizardHat = new PIXI.Sprite.from('images/wizardHat.png')
             this.wizardHat.width =40
             this.wizardHat.height = 40
             this.wizardHat.x = 40
             this.wizardHat.y= -20
+            this.wizardHat.visible = ["MERLIN", "PERCIVAL"].includes(clientRole)
             this.addChild(this.wizardHat)
         }
 
@@ -59,6 +58,7 @@ export default class Player extends PIXI.Container {
         this.addChild(this.nameLabel);
 
         this.interactive = true
+        this.buttonMode = true
         this.on('click', this.onClick.bind(this))
 
     }
@@ -83,5 +83,14 @@ export default class Player extends PIXI.Container {
 
     clearVote() {
         this.nameLabel.style.fill = 0x000
+    }
+
+    revealRole() {
+        if (this.skull) {
+            this.skull.visible = true;
+        }
+        if (this.wizardHat) {
+            this.wizardHat.visible = true;
+        }
     }
 }

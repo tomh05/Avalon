@@ -27,11 +27,14 @@ export default class GameScreen extends PIXI.Container {
             textAlign: 'center'
         })
         this.explainerText.anchor.set(0.5,0.5)
+        this.centerObject(this.explainerText)
+        this.explainerText.y = 560
         this.addChild(this.explainerText)
 
         this.lobby = new Lobby();
         this.lobby.pivot.x = this.lobby.width / 2
         this.lobby.y = 50
+        this.centerObject(this.lobby)
         this.lobby.on('nameChanged', this.onNameChanged.bind(this))
         this.lobby.on('ready', this.onReadyClick.bind(this))
         this.addChild(this.lobby)
@@ -107,7 +110,7 @@ export default class GameScreen extends PIXI.Container {
         if (newPhase == "EXPLAINING_ROLES") {
 
             this.setExplainerText("")
-            this.removeChild(this.lobby)
+            this.removeObject(this.lobby)
 
             //setTimeout(() => this.nextTurn(change.value), 10)
             this.clientRole = this.room.state.players[this.room.sessionId].role;
@@ -124,20 +127,18 @@ export default class GameScreen extends PIXI.Container {
         else if (newPhase == "CHOOSING_KNIGHTS") {
 
             if (oldPhase == "EXPLAINING_ROLES") {
-                this.removeChild(this.roleExplainer)
+                this.removeObject(this.roleExplainer)
                 this.createBoard();
             }
             if (oldPhase == "VOTING") {
-                this.removeChild(this.votingBox)
+                this.removeObject(this.votingBox)
             }
 
             if (oldPhase == "REVEALING_VOTE") {
                 this.board.clearVotes();
             }
 
-            if (this.proceedButton) {
-                this.removeChild(this.proceedButton)
-            }
+            this.removeObject(this.proceedButton)
 
             this.board.setKing(this.room.state.currentKing);
 
@@ -152,19 +153,17 @@ export default class GameScreen extends PIXI.Container {
         }
 
         else if (newPhase == "VOTING") {
-            if (this.callVoteButton) {
-                this.removeChild(this.callVoteButton)
-            }
+            this.removeObject(this.callVoteButton)
 
             this.votingBox = new VotingBox();
             this.votingBox.x = Application.WIDTH / 2
-            this.votingBox.y = 400
+            this.votingBox.y = 480
             this.votingBox.on('vote', this.onVote.bind(this))
             this.addChild(this.votingBox);
 
-            this.setExplainerText(`Do you support the king's decision?`)
+            this.setExplainerText(`Do you support the proposed quest?`)
         } else if (newPhase == "REVEALING_VOTE") {
-            this.removeChild(this.votingBox)
+            this.removeObject(this.votingBox)
             this.board.revealVotes(this.room.state.players);
 
             if (this.room.state.votePassed) {
@@ -178,9 +177,7 @@ export default class GameScreen extends PIXI.Container {
         }
         else if (newPhase == "QUESTING") {
 
-            if (this.proceedButton) {
-                this.removeChild(this.proceedButton)
-            }
+            this.removeObject(this.proceedButton)
 
             console.log("questing",this.room.state.players);
             this.board.clearVotes();
@@ -188,10 +185,9 @@ export default class GameScreen extends PIXI.Container {
             if (thisPlayer.isParticipant) {
 
                 this.setExplainerText(`Choose your contribution to the quest.`)
-                console.log('alleg',thisPlayer.allegiance)
                 this.questingBox = new QuestingBox((thisPlayer.allegiance == "GOOD"));
                 this.questingBox.x = Application.WIDTH / 2
-                this.questingBox.y =  Application.HEIGHT / 2
+                this.questingBox.y =  480
                 this.questingBox.on('questContribution', this.onQuestContribution.bind(this))
                 this.addChild(this.questingBox);
             } else {
@@ -199,16 +195,43 @@ export default class GameScreen extends PIXI.Container {
             }
         }
         else if (newPhase == "REVEALING_QUEST") {
-                if (this.questingBox) {
-                    this.removeChild(this.questingBox)
-                }
+            this.removeObject(this.questingBox)
 
             if (this.room.state.quests[this.room.state.currentQuest].outcome == "SUCCESS") {
-            this.setExplainerText(`The quest passed!`)
+                this.setExplainerText(`The quest passed!`)
             } else {
-            this.setExplainerText(`The quest failed!`)
+                this.setExplainerText(`The quest failed!`)
             }
             this.createProceedButton("Proceed")
+        }
+        else if (newPhase == "ASSASSINATION_ATTEMPT") {
+            if (this.clientRole == "ASSASSIN") {
+                this.setExplainerText("Choose who to assassinate.")
+                this.createAssassinateButton();
+            } else {
+                this.setExplainerText("Arthur has nearly won! The assassin will now attempt to kill Merlin.")
+            }
+            this.removeObject(this.proceedButton)
+        }
+        else if (newPhase == "GAME_END") {
+            this.removeObject(this.assassinateButton)
+            this.removeObject(this.proceedButton)
+            this.board.revealRoles();
+            if (this.room.state.gameWinner == "GOOD") {
+                if (oldPhase == "ASSASSINATION_ATTEMPT") {
+                this.setExplainerText("The assasination attempt failed! King Arthur is victorious!")
+                } else {
+                this.setExplainerText("King Arthur completed three quests, and is victorious!")
+                }
+            }
+            if (this.room.state.gameWinner == "EVIL") {
+                if (oldPhase == "ASSASSINATION_ATTEMPT") {
+                this.setExplainerText("Merlin was assassinated! The Minions of Mordred are victorious!")
+                } else {
+                this.setExplainerText("The Minions of Mordred sabotaged three quests, and are victorious!")
+                }
+            }
+            this.createProceedButton("New Game")
         }
     }
 
@@ -222,24 +245,37 @@ export default class GameScreen extends PIXI.Container {
     }
 
     createProceedButton(text) {
-
-        this.proceedButton = new Button("Proceed", 0xffffff, 0x330000);
+        this.proceedButton = new Button(text, 0xffffff, 0x330000);
         this.proceedButton.x = Application.WIDTH / 2
         this.proceedButton.y = 480
         this.addChild(this.proceedButton)
         this.proceedButton.on('click', this.onProceed.bind(this))
     }
 
+    createAssassinateButton() {
+        this.assassinateButton = new Button("Assassinate", 0xffffff, 0x330000);
+        this.assassinateButton.x = Application.WIDTH / 2
+        this.assassinateButton.y = 480
+        this.addChild(this.assassinateButton)
+        this.assassinateButton.on('click', this.onAssassinate.bind(this))
+    }
 
     onProceed() {
+        if (this.room.state.gamePhase == "GAME_END") {
+        this.emit('goto', GameScreen, { draw: true })
+        } else {
         this.proceedButton.update("waiting for others...", 0xAAAAAA, 0x666666);
         this.onReadyClick(true)
+        }
     }
 
     onCallVote() {
         this.room.send({callVote: true});
     }
 
+    onAssassinate() {
+        this.room.send({assassinate: true});
+    }
 
     createBoard() {
         this.board = new Board(this.room.state, this.room.sessionId);
@@ -250,7 +286,7 @@ export default class GameScreen extends PIXI.Container {
         //this.board.on('nameChanged', this.onNameChanged.bind(this))
         //this.board.on('ready', this.onReadyClick.bind(this))
         //
-        this.board.on('participantToggle', this.onParticipantToggle.bind(this))
+        this.board.on('playerSelected', this.onPlayerSelected.bind(this))
         this.addChild(this.board)
     }
 
@@ -259,9 +295,9 @@ export default class GameScreen extends PIXI.Container {
         this.room.send({ready: ready});
     }
 
-    onParticipantToggle(participantId) {
+    onPlayerSelected(participantId) {
         console.log('sending participant toggle',participantId);
-        this.room.send({participant: participantId});
+        this.room.send({playerSelected: participantId});
     }
 
     onVote(vote) {
@@ -333,33 +369,16 @@ export default class GameScreen extends PIXI.Container {
     }
 
     onResize () {
-        if (this.explainerText) {
-            this.explainerText.x = Application.WIDTH / 2
-            this.explainerText.y = 560
-        }
+        this.centerObject.apply(this,[this.explainerText, this.lobby, this.roleExplainer, this.board, this.callVoteButton, this.votingBox, this.proceedButton])
+    }
 
-        if (this.lobby) {
-            this.lobby.x = Application.WIDTH / 2
-        }
+    removeObject(object) {
+        if (object) this.removeChild(object);
+    }
 
-        if (this.roleExplainer) {
-            this.roleExplainer.x = Application.WIDTH / 2
-        }
-
-        if (this.board) {
-            this.board.x = Application.WIDTH / 2
-        }
-        if (this.callVoteButton) {
-            this.callVoteButton.x = Application.WIDTH / 2
-        }
-        if (this.votingBox) {
-            this.votingBox.x = Application.WIDTH / 2
-        }
-
-        if (this.proceedButton) {
-            this.proceedButton.x = Application.WIDTH / 2
-        }
-
+    centerObject(object) {
+        console.log('center',object);
+        if (object) object.x = Application.WIDTH / 2
     }
 
     setExplainerText(newText) {
