@@ -10,7 +10,6 @@ export default class Player extends PIXI.Container {
         this.isKing = false;
 
         this.crown = new PIXI.Sprite.from('images/crown.png')
-        console.log('this',this.crown.scale);
         this.crown.width =40
         this.crown.height = 30
         this.crown.x = -40
@@ -39,12 +38,15 @@ export default class Player extends PIXI.Container {
         }
 
         this.shield = new PIXI.Sprite.from('images/shield.png')
-        console.log('this',this.shield.scale);
         this.shield.width =40
         this.shield.height = 40
-        this.shield.x = 0
-        this.shield.y = -20
-        this.shield.visible = false;
+        this.shield.anchor.x = 0.5
+        this.shield.anchor.y = 0.5
+        this.shield.x = 20
+        this.shield.y = 0
+        this.shield.alpha = 0;
+
+        console.log('this scale',this.shield.scale);
         this.addChild(this.shield)
         
         this.nameLabel = new PIXI.Text(name, {
@@ -75,7 +77,13 @@ export default class Player extends PIXI.Container {
 
     setParticipant(isParticipant) {
         this.isParticipant = isParticipant
-        this.shield.visible = isParticipant
+        if (isParticipant) {
+            tweener.add(this.shield).to({alpha: 1}, 500, Tweener.ease.expoOut);
+            tweener.add(this.shield.scale).to({x: 0.1, y: 0.1}, 300, Tweener.ease.quintOut)
+        } else {
+            tweener.add(this.shield).to({alpha: 0}, 500, Tweener.ease.expoOut);
+            tweener.add(this.shield.scale).to({x: 0.2, y: 0.2265}, 300, Tweener.ease.quintOut)
+        }
     }
 
     revealVote(vote) {

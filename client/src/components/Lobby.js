@@ -12,14 +12,23 @@ export default class Lobby extends PIXI.Container {
 
         //this.background = new PIXI.Sprite.from('images/board.png')
         //this.addChild(this.background)
-        //
+        this.title = new PIXI.Text("Knights", {
+            fontFamily: "Pirata One",
+            fontSize: 40,
+            fill: 0x000,
+            align: 'left'
+        });
+        this.title.y = 0;
+        this.title.x = 220;
+        this.addChild(this.title);
+        
         this.playerList = new PIXI.Text("", {
             fontFamily: "Pirata One",
             fontSize: 32,
             fill: 0x000,
             align: 'left'
         });
-        this.playerList.y = 0;
+        this.playerList.y = 40;
         this.addChild(this.playerList);
         
         this.nameField = new TextInput( { 
@@ -68,6 +77,7 @@ export default class Lobby extends PIXI.Container {
             return `${players[key].name}  (${players[key].ready ? "ready":"not ready"})`;
         });
         this.playerList.text = playerData.join('\n');
+        this.playerList.style.fontSize = playerData.length > 6 ? '17pt': '25pt'
     }
 
     onChangeName(name) {

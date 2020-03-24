@@ -43,7 +43,9 @@ export default class Board extends PIXI.Container {
             const newQuest = new Quest(quests[i])
             newQuest.x = -160 + i * 80
             console.log("creating new quest",newQuest);
+            newQuest.alpha = 0
             this.questSprites.push(newQuest)
+            tweener.add(newQuest).wait(100*i).to({alpha:1}, 500, Tweener.ease.expoOut);
             this.addChild(newQuest);
         }
     }
@@ -64,6 +66,8 @@ export default class Board extends PIXI.Container {
             newPlayerSprite.x = -(this.ellipseMinRadius + this.ellipsePadding ) * this.ellipseAspect * Math.sin(angle);
             newPlayerSprite.y = -20 + (this.ellipseMinRadius + this.ellipsePadding) * Math.cos(angle);
             newPlayerSprite.on('playerClicked', this.handlePlayerClick.bind(this))
+            newPlayerSprite.alpha = 0
+            tweener.add(newPlayerSprite).wait(500*i).to({alpha:1}, 500, Tweener.ease.expoOut);
             this.addChild(newPlayerSprite);
         }
         }

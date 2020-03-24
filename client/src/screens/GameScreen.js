@@ -7,6 +7,7 @@ import EndGameScreen from './EndGameScreen'
 import Board from '../components/Board'
 import VotingBox from '../components/VotingBox'
 import QuestingBox from '../components/QuestingBox'
+import QuestResultsBox from '../components/QuestResultsBox'
 import Lobby from '../components/Lobby'
 import RoleExplainer from '../components/RoleExplainer'
 import Button from '../components/Button'
@@ -15,6 +16,16 @@ export default class GameScreen extends PIXI.Container {
 
     constructor () {
         super()
+
+        /*
+            this.questResultsBox = new QuestResultsBox(["SUCCESS", "FAIL", "SUCCESS", "FAIL", "a", "b"]);
+            this.questResultsBox.x = Application.WIDTH / 2
+            this.questResultsBox.pivot.x = this.questResultsBox.width/2
+            this.questResultsBox.y =  120
+            this.addChild(this.questResultsBox)
+            */
+
+
 
         let text = (colyseus.readyState === WebSocket.CLOSED)
             ? "Couldn't connect."
@@ -84,19 +95,12 @@ export default class GameScreen extends PIXI.Container {
                     }
                 }
 
-                else if (change.field === "quests") {
-                    if (this.board)  {
-                        this.board.updateQuests(change.value);
-                    }
-                }
-
                 else if (change.field === "gamePhase") {
                     // go to next turn after a little delay, to ensure "onJoin" gets called before this.
                     this.handlePhaseChange(change.value, change.previousValue);
 
                 } else if (change.field === "winner") {
                     this.showWinner(change.value);
-
                 }
             });
         }
@@ -126,14 +130,12 @@ export default class GameScreen extends PIXI.Container {
         }
         else if (newPhase == "CHOOSING_KNIGHTS") {
 
+            this.removeObject(this.questResultsBox)
+            this.removeObject(this.roleExplainer)
+            this.removeObject(this.votingBox)
             if (oldPhase == "EXPLAINING_ROLES") {
-                this.removeObject(this.roleExplainer)
                 this.createBoard();
             }
-            if (oldPhase == "VOTING") {
-                this.removeObject(this.votingBox)
-            }
-
             if (oldPhase == "REVEALING_VOTE") {
                 this.board.clearVotes();
             }
@@ -195,16 +197,29 @@ export default class GameScreen extends PIXI.Container {
             }
         }
         else if (newPhase == "REVEALING_QUEST") {
+            let currentQuest = this.room.state.quests[this.room.state.currentQuest];
+
             this.removeObject(this.questingBox)
 
-            if (this.room.state.quests[this.room.state.currentQuest].outcome == "SUCCESS") {
-                this.setExplainerText(`The quest passed!`)
-            } else {
-                this.setExplainerText(`The quest failed!`)
-            }
-            this.createProceedButton("Proceed")
-        }
+            this.questResultsBox = new QuestResultsBox(currentQuest.shuffledOutcomeCards);
+            this.questResultsBox.x = Application.WIDTH / 2
+            this.questResultsBox.pivot.x = this.questResultsBox.width/2
+            this.questResultsBox.y =  120
+            this.addChild(this.questResultsBox)
+
+            setTimeout(function(){  
+                if (this.room.state.quests[this.room.state.currentQuest].outcome == "SUCCESS") {
+                    this.setExplainerText(`The quest passed!`)
+                } else {
+                    this.setExplainerText(`The quest failed!`)
+                }
+                this.createProceedButton("Proceed")
+                this.board.updateQuests(this.room.state.quests);
+            }.bind(this), 6000);
+
+                   }
         else if (newPhase == "ASSASSINATION_ATTEMPT") {
+            this.removeObject(this.questResultsBox)
             if (this.clientRole == "ASSASSIN") {
                 this.setExplainerText("Choose who to assassinate.")
                 this.createAssassinateButton();
@@ -214,6 +229,7 @@ export default class GameScreen extends PIXI.Container {
             this.removeObject(this.proceedButton)
         }
         else if (newPhase == "GAME_END") {
+            this.removeObject(this.questResultsBox)
             this.removeObject(this.assassinateButton)
             this.removeObject(this.proceedButton)
             this.board.revealRoles();

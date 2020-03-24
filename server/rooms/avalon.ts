@@ -1,9 +1,6 @@
 import { Room, Delayed, Client } from 'colyseus';
 import { type, Schema, MapSchema, ArraySchema } from '@colyseus/schema';
 
-const TURN_TIMEOUT = 10
-const BOARD_WIDTH = 3;
-
 const MIN_PLAYERS = 5;
 const MAX_PLAYERS = 10;
 
@@ -47,6 +44,7 @@ class Quest extends Schema {
     @type("number") requiredParticipants: number;
     @type("number") requiredFails: number;
     @type("string") outcome: string;
+    @type(["string"]) shuffledOutcomeCards: string[] = new ArraySchema<string>();
 }
 
 class State extends Schema {
@@ -208,6 +206,8 @@ export class Avalon extends Room<State> {
     assessQuest() {
         console.log('assessing quest')
         let fails = 0;
+        let successes = 0;
+        let currentQuest = this.state.quests[this.state.currentQuest]
 
         // abort if someone hasn't contributed yet
         for (let id in this.state.players) {
@@ -216,6 +216,7 @@ export class Avalon extends Room<State> {
                 console.log("evaluating contribution",player.questContribution)
                 switch (player.questContribution) {
                     case "SUCCESS":
+                        successes += 1;
                         break;
                     case "FAIL":
                         fails +=1;
@@ -227,13 +228,24 @@ export class Avalon extends Room<State> {
             }
         }
 
-        console.log('fails', fails)
-        console.log("fails", this.state.quests[this.state.currentQuest].requiredFails) 
 
-        if (fails < this.state.quests[this.state.currentQuest].requiredFails) {
-            this.state.quests[this.state.currentQuest].outcome = "SUCCESS"
+        for (let i=0; i< fails; i++) {
+            currentQuest.shuffledOutcomeCards.push("FAIL");
+        }
+        for (let i=0; i< successes; i++) {
+            currentQuest.shuffledOutcomeCards.push("SUCCESS");
+        }
+
+        // shuffle outcome cards
+        currentQuest.shuffledOutcomeCards.sort(function() { return 0.5 - Math.random();})
+
+        console.log('fails', fails)
+        console.log("fails", currentQuest.requiredFails) 
+
+        if (fails < currentQuest.requiredFails) {
+            currentQuest.outcome = "SUCCESS"
         } else {
-            this.state.quests[this.state.currentQuest].outcome = "FAIL"
+            currentQuest.outcome = "FAIL"
         }
 
         this.setGamePhase("REVEALING_QUEST");
@@ -372,7 +384,7 @@ export class Avalon extends Room<State> {
                 questRequiredFails = [1,1,1,2,1];
                 break;
             default:
-                questRequiredParticipants = [1,1,1,1,1];
+                questRequiredParticipants = [2,2,1,1,1];
                 questRequiredFails = [1,1,1,2,1];
                 break;
 
