@@ -385,7 +385,7 @@ export default class GameScreen extends PIXI.Container {
     }
 
     onResize () {
-        this.centerObject.apply(this,[this.explainerText, this.lobby, this.roleExplainer, this.board, this.callVoteButton, this.votingBox, this.proceedButton])
+        this.centerObject.apply(this,[this.explainerText, this.lobby, this.roleExplainer, this.board, this.callVoteButton, this.votingBox, this.proceedButton, this.questResultsBox, this.assassinateButton])
     }
 
     removeObject(object) {
@@ -393,7 +393,6 @@ export default class GameScreen extends PIXI.Container {
     }
 
     centerObject(object) {
-        console.log('center',object);
         if (object) object.x = Application.WIDTH / 2
     }
 
